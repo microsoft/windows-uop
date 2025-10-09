@@ -51,7 +51,7 @@ The Windows Update orchestration platform supports the following update types:
     - **SetActionResult**: This API call must be included in the Action File to indicate the result of the action.
     - **SetActionProgress**: This optional API call can be periodically made throughout the execution of the update action to indicate progress (as a percentage) that will be displayed to the end user via the Settings > Apps > Installed Apps page.
 
-![Key Concept Diagram](../.github/KeyConceptDiagram.png)
+![Key Concept Diagram](../assets/KeyConceptDiagram.png)
 
 ## Step-by-Step Usage
 
