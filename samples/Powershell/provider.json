@@ -1,0 +1,26 @@
+{
+  "Id": "SampleProvider",
+  "Version": "1.0.0.0",
+  "Type": "Powershell",
+  "CatalogFile": "SampleProvider.cat",
+  "ScanFileName": "SampleProvider-scan.ps1",
+  "ScanFileArguments": "-ProviderId SampleProvider -LogFile SampleProvider.log -Verbose",
+  "PayloadFiles": [
+    {
+      "FileName": "SampleProvider-action.ps1",
+      "FileHash": "1zxJ8hdHtu13Jv14lxOXiLbAKSlgeIkRJxD6213X4gs="
+    },
+    {
+      "FileName": "SampleProvider-scan.ps1",
+      "FileHash": "X5KuiHVdr7yxd2B/Z2OeDQYIIk1G5LMOujVx2GnZNmI="
+    },
+    {
+      "FileName": "UOP-runtime.psd1",
+      "FileHash": "kpXl7qFTEm3u++4suO7ZlIIVCPXZoKckMx/6mBARZvU="
+    },
+    {
+      "FileName": "UOP-runtime.psm1",
+      "FileHash": "QjCsOCsGt+qiazuwcT00LvTZZgt0coXYR7MdCixMSik="
+    }
+  ]
+}
