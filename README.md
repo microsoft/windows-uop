@@ -26,7 +26,7 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 * Provides a unified reboot experience for both system and app updates, reducing user disruption.
 * Allows onboarded apps to leverage existing Windows update policies for compliance and scheduling.
 
-### Enhanced User Experience
+#### Enhanced User Experience
 * Onboarded app updates use native Windows interfaces for consistent messaging and notifications.
 * Integrates seamlessly with the Windows Settings Apps page.
 * Automatically benefits from future enhancements and orchestration efficiencies.
@@ -245,7 +245,7 @@ For debugging and monitoring, utilize the logging utilities in [`UOP-deployment.
 For comprehensive error code documentation, see: [UOP Error Codes Reference](docs/UOPReturnCodes.md).
 
 ## API Reference
-For comprehensive API documentation including parameters, examples, and advanced scenarios, see: [API Usage Guide](docs/UOPAPIUsageGuide.md)
+For comprehensive API documentation including parameters, examples, and advanced scenarios, see: [API Usage Guide](docs/UOPApiUsageGuide.md)
 
 ## Support
 
