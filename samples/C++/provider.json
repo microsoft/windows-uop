@@ -1,0 +1,14 @@
+{
+  "Id": "SampleProvider",
+  "Version": "1.0.0.0",
+  "Type": "Executable",
+  "CatalogFile": "SampleProvider.cat",
+  "ScanFileName": "SampleProvider.exe",
+  "ScanFileArguments": "scan --providerId SampleProvider --log --verbose",
+  "PayloadFiles": [
+    {
+      "FileName": "SampleProvider.exe",
+      "FileHash": "oOwk4DPblFX+KrfwcOY3mL7wcJlUX7rAPkZ50bP1Kf0="
+    }
+  ]
+}
