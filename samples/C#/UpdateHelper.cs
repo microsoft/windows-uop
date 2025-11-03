@@ -75,8 +75,8 @@ internal static class UpdateHelper
         // Generate updateId by hashing the packageId_packageVersion
         string updateId = GenerateUpdateId(packageIdVersion);
 
-        string title = "Executable Deploy Update (1.2.3.4)";
-        string description = "Executable Deploy Update Description";
+        string title = "Sample Deploy Update (1.2.3.4)";
+        string description = "This is a sample C# executable deploy update for demonstration purposes.";
 
         // Localization Info
         var localizationInfo = new List<WindowsSoftwareUpdateLocalizationInfo>
@@ -85,13 +85,13 @@ internal static class UpdateHelper
                 3082, // es-ES
                 "Executable Deploy Actualización 1234 Título (es-ES)",
                 "Executable Deploy Actualización 1234 Descripción (es-ES)",
-                new Uri($"http://contoso.com/es-ES/updateId={updateId}")
+                new Uri("http://contoso.com/es-ES/updateId=SampleApp.Deploy_1.2.3.4")
             ),
             new WindowsSoftwareUpdateLocalizationInfo(
                 1036, // fr-FR
                 "Executable Deploy Mise à jour 1234 Titre (fr-FR)",
                 "Executable Deploy Mise à jour 1234 Description (fr-FR)",
-                new Uri($"http://contoso.com/fr-FR/updateId={updateId}")
+                new Uri("http://contoso.com/fr-FR/updateId=SampleApp.Deploy_1.2.3.4")
             )
         };
 
@@ -146,7 +146,7 @@ internal static class UpdateHelper
             updateId,
             title,
             description,
-            new Uri($"http://contoso.com/updateId={updateId}"),
+            new Uri("http://contoso.com/updateId=SampleApp.Deploy_1.2.3.4"),
             1024 * 1024,
             2 * 1024 * 1024,
             null, // WindowsSoftwareUpdateSourceVersion
@@ -183,23 +183,23 @@ internal static class UpdateHelper
         // Generate updateId by hashing the packageId_packageVersion
         string updateId = GenerateUpdateId(packageIdVersion);
 
-        string title = "Executable Download/Install Update (5.6.7.8)";
-        string description = "Executable Download/Install Update Description";
+        string title = "Sample Download/Install Update (5.6.7.8)";
+        string description = "This is a sample C# executable download/install update for demonstration purposes.";
 
         // Localization Info
         var localizationInfo = new List<WindowsSoftwareUpdateLocalizationInfo>
         {
             new WindowsSoftwareUpdateLocalizationInfo(
                 3082, // es-ES
-                "Executable Download/Install Actualización 1234 Título (es-ES)",
-                "Executable Download/Install Actualización 1234 Descripción (es-ES)",
-                new Uri($"http://contoso.com/es-ES/updateId={updateId}")
+                "Executable Download/Install Actualización 5678 Título (es-ES)",
+                "Executable Download/Install Actualización 5678 Descripción (es-ES)",
+                new Uri("http://contoso.com/es-ES/updateId=SampleApp.DownloadInstall_5.6.7.8")
             ),
             new WindowsSoftwareUpdateLocalizationInfo(
                 1036, // fr-FR
-                "Executable Download/Install Mise à jour 1234 Titre (fr-FR)",
-                "Executable Download/Install Mise à jour 1234 Description (fr-FR)",
-                new Uri($"http://contoso.com/fr-FR/updateId={updateId}")
+                "Executable Download/Install Mise à jour 5678 Titre (fr-FR)",
+                "Executable Download/Install Mise à jour 5678 Description (fr-FR)",
+                new Uri("http://contoso.com/fr-FR/updateId=SampleApp.DownloadInstall_5.6.7.8")
             )
         };
 
@@ -257,7 +257,7 @@ internal static class UpdateHelper
             updateId,
             title,
             description,
-            new Uri($"http://contoso.com/updateId={updateId}"),
+            new Uri("http://contoso.com/updateId=SampleApp.DownloadInstall_5.6.7.8"),
             1024 * 1024,
             2 * 1024 * 1024,
             null, // WindowsSoftwareUpdateSourceVersion
@@ -286,10 +286,10 @@ internal static class UpdateHelper
     /// <summary>
     /// Creates an app package update object.
     /// </summary>
-    public static WindowsSoftwareUpdate CreateAppPackageUpdate(string providerId, bool verboseMode)
+    internal static WindowsSoftwareUpdate CreateAppPackageUpdate(string providerId, bool enableLogging, bool verboseMode)
     {
         // Set the title for this update type
-        string title = "AppPackage Update (2.3.4.5)";
+        string title = "Outlook Package Update (2.3.4.5)";
 
         // Use package family name and architecture for update ID generation
         string packageFamilyName = "Microsoft.OutlookForWindows_8wekyb3d8bbwe";
@@ -305,6 +305,22 @@ internal static class UpdateHelper
             Console.WriteLine($"Generated UpdateId: {updateId}");
         }
 
+        var localizationInfo = new List<WindowsSoftwareUpdateLocalizationInfo>
+        {
+            new WindowsSoftwareUpdateLocalizationInfo(
+                3082, // es-ES
+                "Executable AppPackage Actualización 2345 Título (es-ES)",
+                "Executable AppPackage Actualización 2345 Descripción (es-ES)",
+                new Uri("http://contoso.com/es-ES/updateId=SampleApp.AppPackage_2.3.4.5")
+            ),
+            new WindowsSoftwareUpdateLocalizationInfo(
+                1036, // fr-FR
+                "Executable AppPackage Mise à jour 2345 Titre (fr-FR)",
+                "Executable AppPackage Mise à jour 2345 Description (fr-FR)",
+                new Uri("http://contoso.com/fr-FR/updateId=SampleApp.AppPackage_2.3.4.5")
+            )
+        };
+
         var appPackageInfo = new WindowsSoftwareUpdateAppPackageInfo(
             packageFamilyName,
             WindowsSoftwareUpdateArchitecture.X64,
@@ -315,15 +331,15 @@ internal static class UpdateHelper
             WindowsSoftwareUpdateInstallationType.AppPackage,
             updateId,
             title,
-            "AppPackage Update (2.3.4.5) Description",
-            new Uri($"http://contoso.com/updateId={updateId}"),
+            "This is a sample AppX package update for demonstration purposes.",
+            new Uri("http://contoso.com/updateId=SampleApp.AppPackage_2.3.4.5"),
             1024 * 1024,
             2 * 1024 * 1024,
             null, // WindowsSoftwareUpdateSourceVersion
             new WindowsSoftwareUpdateVersion(2, 3, 4, 5),
             appPackageInfo,
             null, // WindowsSoftwareUpdateExecutionInfo
-            null); // WindowsSoftwareUpdateOptionalInfo
+            new WindowsSoftwareUpdateOptionalInfo(localizationInfo, null, null));
 
         if (verboseMode)
         {

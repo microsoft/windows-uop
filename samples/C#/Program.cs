@@ -207,7 +207,7 @@ internal class Program
         Console.WriteLine($"Version: {executableDownloadInstallUpdate.TargetVersion.Major}.{executableDownloadInstallUpdate.TargetVersion.Minor}.{executableDownloadInstallUpdate.TargetVersion.RevisionMajor}.{executableDownloadInstallUpdate.TargetVersion.RevisionMinor}");
         Console.WriteLine();
 
-        var appPackageUpdate = UpdateHelper.CreateAppPackageUpdate(providerId, s_verboseMode);
+        var appPackageUpdate = UpdateHelper.CreateAppPackageUpdate(providerId, s_enableLogging, s_verboseMode);
         Console.WriteLine("Update Type: AppPackage");
         Console.WriteLine($"Update ID: {appPackageUpdate.UpdateId}");
         Console.WriteLine($"Title: {appPackageUpdate.Title}");

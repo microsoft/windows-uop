@@ -357,31 +357,27 @@ WindowsSoftwareUpdate CreateExecutableDeployUpdate(std::wstring providerId)
     // Generate updateId by hashing the packageId_packageVersion
     std::wstring updateId = GenerateUpdateId(packageIdVersion);
 
-    std::wstring title = L"Executable Deploy Update (1.2.3.4)";
-    std::wstring description = L"Executable Deploy Update Description";
+    std::wstring title = L"Sample Deploy Update (1.2.3.4)";
+    std::wstring description = L"This is a sample C++ executable deploy update for demonstration purposes.";
 
     // Localization Info
     winrt::Windows::Foundation::Collections::IVector<WindowsSoftwareUpdateLocalizationInfo> localizationInfo = winrt::single_threaded_vector<WindowsSoftwareUpdateLocalizationInfo>();
 
-    std::wostringstream urlStream1;
-    urlStream1 << L"http://contoso.com/es-ES/updateId=" << updateId;
     localizationInfo.Append(
         WindowsSoftwareUpdateLocalizationInfo(
             3082, // es-ES
-            L"Executable Deploy Actualizaci�n 1234 T�tulo (es-ES)",
-            L"Executable Deploy Actualizaci�n 1234 Descripci�n (es-ES)",
-            winrt::Windows::Foundation::Uri(urlStream1.str())
+            L"Executable Deploy Actualización 1234 Título (es-ES)",
+            L"Executable Deploy Actualización 1234 Descripción (es-ES)",
+            winrt::Windows::Foundation::Uri(L"http://contoso.com/es-ES/updateId=SampleApp.Deploy_1.2.3.4")
         )
     );
 
-    std::wostringstream urlStream2;
-    urlStream2 << L"http://contoso.com/fr-FR/updateId=" << updateId;
     localizationInfo.Append(
         WindowsSoftwareUpdateLocalizationInfo(
             1036, // fr-FR
-            L"Executable Deploy Mise � jour 1234 Titre (fr-FR)",
-            L"Executable Deploy Mise � jour 1234 Description (fr-FR)",
-            winrt::Windows::Foundation::Uri(urlStream2.str())
+            L"Executable Deploy Mise à jour 1234 Titre (fr-FR)",
+            L"Executable Deploy Mise à jour 1234 Description (fr-FR)",
+            winrt::Windows::Foundation::Uri(L"http://contoso.com/fr-FR/updateId=SampleApp.Deploy_1.2.3.4")
         )
     );
 
@@ -430,16 +426,13 @@ WindowsSoftwareUpdate CreateExecutableDeployUpdate(std::wstring providerId)
         std::wcout << L"Generated UpdateId: " << updateId << std::endl;
     }
 
-    std::wostringstream mainUrlStream;
-    mainUrlStream << L"http://contoso.com/updateId=" << updateId;
-
     WindowsSoftwareUpdate update(
         providerId,
         WindowsSoftwareUpdateInstallationType::Executable,
         updateId,
         title,
         description,
-        winrt::Windows::Foundation::Uri(mainUrlStream.str()),
+        winrt::Windows::Foundation::Uri(L"http://contoso.com/updateId=SampleApp.Deploy_1.2.3.4"),
         1024 * 1024,
         2 * 1024 * 1024,
         nullptr /* WindowsSoftwareUpdateSourceVersion */,
@@ -472,31 +465,27 @@ WindowsSoftwareUpdate CreateExecutableDownloadInstallUpdate(std::wstring provide
     // Generate updateId by hashing the packageId_packageVersion
     std::wstring updateId = GenerateUpdateId(packageIdVersion);
 
-    std::wstring title = L"Executable Download/Install Update (5.6.7.8)";
-    std::wstring description = L"Executable Download/Install Update Description";
+    std::wstring title = L"Sample Download/Install Update (5.6.7.8)";
+    std::wstring description = L"This is a sample C++ executable download/install update for demonstration purposes.";
 
     // Localization Info
     winrt::Windows::Foundation::Collections::IVector<WindowsSoftwareUpdateLocalizationInfo> localizationInfo = winrt::single_threaded_vector<WindowsSoftwareUpdateLocalizationInfo>();
 
-    std::wostringstream urlStream1;
-    urlStream1 << L"http://contoso.com/es-ES/updateId=" << updateId;
     localizationInfo.Append(
         WindowsSoftwareUpdateLocalizationInfo(
             3082, // es-ES
-            L"Executable Download/Install Actualizaci�n 1234 T�tulo (es-ES)",
-            L"Executable Download/Install Actualizaci�n 1234 Descripci�n (es-ES)",
-            winrt::Windows::Foundation::Uri(urlStream1.str())
+            L"Executable Download/Install Actualización 5678 Título (es-ES)",
+            L"Executable Download/Install Actualización 5678 Descripción (es-ES)",
+            winrt::Windows::Foundation::Uri(L"http://contoso.com/es-ES/updateId=SampleApp.DownloadInstall_5.6.7.8")
         )
     );
 
-    std::wostringstream urlStream2;
-    urlStream2 << L"http://contoso.com/fr-FR/updateId=" << updateId;
     localizationInfo.Append(
         WindowsSoftwareUpdateLocalizationInfo(
             1036, // fr-FR
-            L"Executable Download/Install Mise � jour 1234 Titre (fr-FR)",
-            L"Executable Download/Install Mise � jour 1234 Description (fr-FR)",
-            winrt::Windows::Foundation::Uri(urlStream2.str())
+            L"Executable Download/Install Mise à jour 5678 Titre (fr-FR)",
+            L"Executable Download/Install Mise à jour 5678 Description (fr-FR)",
+            winrt::Windows::Foundation::Uri(L"http://contoso.com/fr-FR/updateId=SampleApp.DownloadInstall_5.6.7.8")
         )
     );
 
@@ -548,16 +537,13 @@ WindowsSoftwareUpdate CreateExecutableDownloadInstallUpdate(std::wstring provide
         std::wcout << L"Generated UpdateId: " << updateId << std::endl;
     }
 
-    std::wostringstream mainUrlStream;
-    mainUrlStream << L"http://contoso.com/updateId=" << updateId;
-
     WindowsSoftwareUpdate update(
         providerId,
         WindowsSoftwareUpdateInstallationType::Executable,
         updateId,
         title,
         description,
-        winrt::Windows::Foundation::Uri(mainUrlStream.str()),
+        winrt::Windows::Foundation::Uri(L"http://contoso.com/updateId=SampleApp.DownloadInstall_5.6.7.8"),
         1024 * 1024,
         2 * 1024 * 1024,
         nullptr /* WindowsSoftwareUpdateSourceVersion */,
@@ -586,7 +572,7 @@ WindowsSoftwareUpdate CreateExecutableDownloadInstallUpdate(std::wstring provide
 WindowsSoftwareUpdate CreateAppPackageUpdate(std::wstring providerId)
 {
     // Set the title for this update type
-    std::wstring title = L"AppPackage Update (2.3.4.5)";
+    std::wstring title = L"Outlook Package Update (2.3.4.5)";
 
     // Use package family name and architecture for update ID generation
     std::wstring packageFamilyName = L"Microsoft.OutlookForWindows_8wekyb3d8bbwe";
@@ -602,6 +588,27 @@ WindowsSoftwareUpdate CreateAppPackageUpdate(std::wstring providerId)
         std::wcout << L"Generated UpdateId: " << updateId << std::endl;
     }
 
+    // Localization Info
+    winrt::Windows::Foundation::Collections::IVector<WindowsSoftwareUpdateLocalizationInfo> localizationInfo = winrt::single_threaded_vector<WindowsSoftwareUpdateLocalizationInfo>();
+
+    localizationInfo.Append(
+        WindowsSoftwareUpdateLocalizationInfo(
+            3082, // es-ES
+            L"Executable AppPackage Actualización 2345 Título (es-ES)",
+            L"Executable AppPackage Actualización 2345 Descripción (es-ES)",
+            winrt::Windows::Foundation::Uri(L"http://contoso.com/es-ES/updateId=SampleApp.AppPackage_2.3.4.5")
+        )
+    );
+
+    localizationInfo.Append(
+        WindowsSoftwareUpdateLocalizationInfo(
+            1036, // fr-FR
+            L"Executable AppPackage Mise à jour 2345 Titre (fr-FR)",
+            L"Executable AppPackage Mise à jour 2345 Description (fr-FR)",
+            winrt::Windows::Foundation::Uri(L"http://contoso.com/fr-FR/updateId=SampleApp.AppPackage_2.3.4.5")
+        )
+    );
+
     std::wostringstream urlStream;
     urlStream << L"http://contoso.com/updateId=" << updateId;
 
@@ -615,15 +622,15 @@ WindowsSoftwareUpdate CreateAppPackageUpdate(std::wstring providerId)
         WindowsSoftwareUpdateInstallationType::AppPackage,
         updateId,
         title,
-        L"AppPackage Update (2.3.4.5) Description",
-        winrt::Windows::Foundation::Uri(urlStream.str()),
+        L"This is a sample AppX package update for demonstration purposes.",
+        winrt::Windows::Foundation::Uri(L"http://contoso.com/updateId=SampleApp.AppPackage_2.3.4.5"),
         1024 * 1024,
         2 * 1024 * 1024,
         nullptr /* WindowsSoftwareUpdateSourceVersion */,
         WindowsSoftwareUpdateVersion(2, 3, 4, 5),
         appPackageInfo,
         nullptr /* WindowsSoftwareUpdateExecutionInfo */,
-        nullptr /* WindowsSoftwareUpdateOptionalInfo */);
+        WindowsSoftwareUpdateOptionalInfo(localizationInfo, nullptr, nullptr));
 
     if (g_verboseMode)
     {

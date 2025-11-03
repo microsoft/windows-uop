@@ -105,7 +105,7 @@ function Invoke-ProviderScan {
         -ProviderId $ProviderId `
         -UpdateId $deployUpdateId `
         -Title $deployTitle `
-        -Description "This is a sample PowerShell executable deploy update for demonstration purposes." `
+        -Description "This is a sample PowerShell deploy update for demonstration purposes." `
         -MoreInfoUrl "http://contoso.com/updateId=SampleApp.Deploy_1.2.3.4" `
         -TargetVersion $deployVersion `
         -DownloadSize ([uint64]1048576) `
@@ -160,7 +160,7 @@ function Invoke-ProviderScan {
         -ProviderId $ProviderId `
         -UpdateId $downloadInstallUpdateId `
         -Title $downloadInstallTitle `
-        -Description "This is a sample PowerShell executable download/install update for demonstration purposes." `
+        -Description "This is a sample PowerShell download/install update for demonstration purposes." `
         -MoreInfoUrl "http://contoso.com/updateId=SampleApp.DownloadInstall_5.6.7.8" `
         -InstallationType $ActionScriptInstallationType `
         -TargetVersion $downloadInstallVersion `
