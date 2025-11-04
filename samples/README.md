@@ -1,123 +1,171 @@
-# Powershell Windows Update Sample Provider
+# Windows Update Orchestrator Provider (UOP) Samples
 
-A Powershell-based sample provider demonstrating Windows Update Orchestrator (UOP) APIs for creating, scanning, and executing updates.
+This directory contains sample implementations of Windows Update Orchestrator Providers in multiple programming languages. These samples demonstrate how to create custom update providers that integrate with the Windows Update system to discover, download, install, and deploy updates.
 
-## Prerequisites
-1. Powershell 5.1 with Windows Runtime support. This is required to load the WinRT runtimeclasses.
-2. Currently only supported for `powershell.exe`
-3. Admin level privileges required to execute powershell modules
+## Available Samples
 
-## Directory Structure
+| Language | Directory | Description |
+|----------|-----------|-------------|
+| **C#** | [`C#/`](C#/) | .NET-based provider using C#/WinRT projection (~27 MB single-file executable) |
+| **C++** | [`C++/`](C++/) | Native C++ provider using C++/WinRT (~221 KB native executable) |
+| **PowerShell** | [`Powershell/`](Powershell/) | Script-based provider for rapid prototyping and testing |
 
-| File | Purpose |
-|------|---------|
-| `SampleProvider-scan.ps1` | Discovers and reports available updates to Windows Update Orchestrator |
-| `SampleProvider-action.ps1` | Executes update actions (download, install, deploy, restart) |
-| `UOP-runtime.psm1` | Core Powershell module with WinRT APIs and helper functions |
-| `UOP-runtime.psd1` | Module manifest defining exported functions and metadata |
+## What is a Windows Update Provider?
 
-## Core Scripts
+A Windows Update Provider is a component that:
+- **Discovers** available updates for specific software or components
+- **Submits** update metadata to Windows Update Orchestrator
+- **Executes** update actions (download, install, deploy, restart) when instructed by the system
+- **Reports** progress and completion status back to the orchestrator
 
-### SampleProvider-scan.ps1
-Creates sample updates and submits them to Windows Update Orchestrator via `WindowsSoftwareUpdateProviderStatus` APIs.
+## Common Prerequisites
 
-**Usage:**
-```powershell
-.\SampleProvider-scan.ps1 [-ProviderId <string>] [-LogFile <string>] [-Verbose]
-```
+All samples require:
+- **Windows 11 SDK** (Version 10.0.26100.0 or later) - Includes Windows.Management.Update Contract 2.0 APIs
+  - Download from: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/
+- **Administrator privileges** to register and run providers
 
-**Parameters:**
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `-ProviderId` | "SampleProvider" | Provider identifier |
-| `-LogFile` | "" | Log file in State subfolder |
-| `-Verbose` | N/A | Detailed output |
+## Choosing a Sample
 
-### SampleProvider-action.ps1
-Handles action operations with progress reporting and result status updates.
+### Use C# if you:
+- Prefer managed code and .NET ecosystem
+- Want rapid development with strong typing and modern language features
+- Need good balance between performance and development speed
+- Want to deploy as a single-file executable
 
-**Usage:**
-```powershell
-.\SampleProvider-action.ps1 <Action> [-ProviderId <string>] [-UpdateId <string>] [-LogFile <string>] [-ForceClose] [-Verbose]
-```
+### Use C++ if you:
+- Need maximum performance and minimal runtime dependencies
+- Prefer native code without .NET runtime
+- Want the smallest possible executable size
+- Are already working in a C++ codebase
 
-**Parameters:**
-| Parameter | Required | Default | Description |
-|-----------|----------|---------|-------------|
-| `Action` | Yes | N/A | download, install, deploy, restart |
-| `-ProviderId` | No | "SampleProvider" | Provider identifier |
-| `-UpdateId` | No | "" | Update ID for the action |
-| `-LogFile` | No | "" | Log file in State subfolder |
-| `-ForceClose` | No | N/A | Force close applications |
-| `-Verbose` | No | N/A | Detailed output |
+### Use PowerShell if you:
+- Need to quickly prototype and test provider behavior
+- Want to modify and test without recompilation
+- Are comfortable with scripting and Windows PowerShell
+- Need to integrate with existing PowerShell automation
 
-## Support Module
+## Core Provider Concepts
 
-### UOP-runtime.psm1
-Core module providing:
-- **WinRT Type Loading**: Windows.Management.Update APIs
-- **Update Creation**: Functions to create deploy, download/install, and app package updates
-- **Provider Status**: Progress reporting and result submission
-- **Utility Functions**: Logging, versioning, message output
+Each sample demonstrates:
 
-### UOP-runtime.psd1
-Module manifest exporting essential functions for sample provider operations.
+1. **Provider Registration**: Identifying your provider to Windows Update
+2. **Scan Operation**: Creating and submitting update metadata
+3. **Action Handling**: Implementing download, install, deploy, and restart operations
+4. **Progress Reporting**: Real-time status updates during actions
+5. **Result Submission**: Reporting success/failure and extended error information
 
-## Sample Updates
+## Sample Update Types
 
-The scan script creates three types of updates:
+All samples create similar update types to demonstrate different action flows:
 
-| Update Type | Update ID | Version | Actions |
-|-------------|-----------|---------|---------|
-| Deploy | `SampleApp.Deploy_1.2.3.4` | 1.2.3.4 | Deploy, CloseAndDeploy, Restart |
-| Download/Install | `SampleApp.DownloadInstall_5.6.7.8` | 5.6.7.8 | Download, Install, CloseAndInstall, Restart |
-| App Package | `Microsoft.OutlookForWindows_*` | 2.3.4.5 | System-managed |
+| Update Type | Actions | Optional Actions (with app closure) | Purpose |
+|-------------|---------|--------------------------------------|---------|
+| **Deploy Update** | Deploy, Reboot | CloseAndDeploy, CloseAndRestart | Demonstrates deployment without separate download/install |
+| **Download/Install Update** | Download, Install, Reboot | CloseAndInstall, CloseAndRestart | Demonstrates traditional two-phase update |
+| **App Package Update** | System-managed | N/A | Demonstrates packaged application updates |
+
+> **Note**: Optional actions (`CloseAndDeploy`, `CloseAndInstall`, `CloseAndRestart`) are not separate action types. They represent the same underlying actions (Deploy, Install, AppRestart) with the `--forceClose` flag to request application closure before execution.
+
+## Getting Started
+
+1. **Choose your preferred language** from the table above
+2. **Navigate to the corresponding subdirectory**
+3. **Follow the README.md** in that directory for specific build and usage instructions
+4. **Review the provider.json** configuration file in each sample
+
+## Integration Flow
 
 ## Action Examples
 
-| Action | Command | Purpose |
-|--------|---------|---------|
-| **Scan** | `.\SampleProvider-scan.ps1` | Discover updates |
-| **Download** | `.\SampleProvider-action.ps1 download -UpdateId "ABC123"` | Download update |
-| **Install** | `.\SampleProvider-action.ps1 install -UpdateId "ABC123" -ForceClose` | Install with app closure |
-| **Deploy** | `.\SampleProvider-action.ps1 deploy -UpdateId "ABC123"` | Deploy update |
-| **Restart** | `.\SampleProvider-action.ps1 restart -UpdateId "ABC123"` | Application restart |
-
-## Logging
-
-When `-LogFile` is specified:
-- Output redirected to `State/<LogFile>`
-- Automatic log rotation (5MB default)
-- Timestamped entries with structured information
-- Verbose mode automatically enabled
-
-## Integration with Windows Update
-
-1. **Registration**: Provider registers with Windows Update system
-2. **Scan Phase**: System calls `SampleProvider-scan.ps1` to discover updates
-3. **Action Phase**: System calls `SampleProvider-action.ps1` to execute operations
-4. **Progress Reporting**: Actions report progress via UOP-runtime module
-
-## Example Workflows
-
-### Basic Scan
-```powershell
-.\SampleProvider-scan.ps1
 ```
 
-### Scan with Logging
-```powershell
-.\SampleProvider-scan.ps1 -ProviderId "SampleProvider" -LogFile "scan.log"
+┌─────────────────────────────────────────────────────────────┐| Action | Command | Purpose |
+
+│  Windows Update Orchestrator                                │|--------|---------|---------|
+
+└─────────────────────────────────────────────────────────────┘| **Scan** | `.\SampleProvider-scan.ps1` | Discover updates |
+
+                    │| **Download** | `.\SampleProvider-action.ps1 download -UpdateId "ABC123"` | Download update |
+
+                    ├── Triggers Scan ──────────────┐| **Install** | `.\SampleProvider-action.ps1 install -UpdateId "ABC123" -ForceClose` | Install with app closure |
+
+                    │                                │| **Deploy** | `.\SampleProvider-action.ps1 deploy -UpdateId "ABC123"` | Deploy update |
+
+                    │                                ▼| **Restart** | `.\SampleProvider-action.ps1 restart -UpdateId "ABC123"` | Application restart |
+
+            ┌───────────────────────────────────────────────┐
+
+            │  Provider Scan Operation                      │## Logging
+
+            │  - Discover available updates                 │
+
+            │  - Create update metadata                     │When `-LogFile` is specified:
+
+            │  - Submit to Windows Update                   │- Output redirected to `State/<LogFile>`
+
+            └───────────────────────────────────────────────┘- Automatic log rotation (5MB default)
+
+                    │- Timestamped entries with structured information
+
+                    │ Update metadata submitted- Verbose mode automatically enabled
+
+                    │
+
+                    ▼## Integration with Windows Update
+
+┌─────────────────────────────────────────────────────────────┐
+
+│  Windows Update Orchestrator                                │1. **Registration**: Provider registers with Windows Update system
+
+│  - Schedules updates based on policy                        │2. **Scan Phase**: System calls `SampleProvider-scan.ps1` to discover updates
+
+│  - Determines when to execute actions                       │3. **Action Phase**: System calls `SampleProvider-action.ps1` to execute operations
+
+└─────────────────────────────────────────────────────────────┘4. **Progress Reporting**: Actions report progress via UOP-runtime module
+
+                    │
+
+                    ├── Executes Action ────────────┐## Example Workflows
+
+                    │                                │
+
+                    │                                ▼### Basic Scan
+
+            ┌───────────────────────────────────────────────┐```powershell
+
+            │  Provider Action Operation                    │.\SampleProvider-scan.ps1
+
+            │  - Execute download/install/deploy/restart    │```
+
+            │  - Report progress                            │
+
+            │  - Submit result                              │### Scan with Logging
+
+            └───────────────────────────────────────────────┘```powershell
+
+```.\SampleProvider-scan.ps1 -ProviderId "SampleProvider" -LogFile "scan.log"
+
 ```
+
+## Additional Resources
 
 ### Execute Actions
-```powershell
-# Download
-.\SampleProvider-action.ps1 download -UpdateId "SampleApp.Deploy_1.2.3.4"
 
-# Install with logging
+- **Windows.Management.Update API Documentation**: Refer to Windows SDK documentation```powershell
+
+- **Provider Configuration**: See `provider.json` files in each sample directory# Download
+
+- **Debugging**: Use Event Viewer (Windows Logs → Application) for provider diagnostics.\SampleProvider-action.ps1 download -UpdateId "SampleApp.Deploy_1.2.3.4"
+
+
+
+## Support# Install with logging
+
 .\SampleProvider-action.ps1 install -UpdateId "SampleApp.Deploy_1.2.3.4" -LogFile "action.log" -Verbose
-```
+
+For issues or questions about these samples, please refer to the main project documentation or file an issue in the project repository.```
+
 
 ## Creating Custom Providers
 ### **Step 1: Define Provider Configuration**
