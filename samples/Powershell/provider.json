@@ -7,12 +7,16 @@
   "ScanFileArguments": "-ProviderId SampleProvider -LogFile SampleProvider.log -Verbose",
   "PayloadFiles": [
     {
+      "FileName": "README.md",
+      "FileHash": "B1I+nmi+stzvlXdHh9nwSC2E92R/ctTSDLICj3xF+fg="
+    },
+    {
       "FileName": "SampleProvider-action.ps1",
       "FileHash": "1zxJ8hdHtu13Jv14lxOXiLbAKSlgeIkRJxD6213X4gs="
     },
     {
       "FileName": "SampleProvider-scan.ps1",
-      "FileHash": "X5KuiHVdr7yxd2B/Z2OeDQYIIk1G5LMOujVx2GnZNmI="
+      "FileHash": "XUZpr8jWBLyN+tQU3lbltGHSYBwmrVpi8BoVXGSu1fM="
     },
     {
       "FileName": "UOP-runtime.psd1",

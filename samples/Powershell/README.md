@@ -126,100 +126,10 @@ When `-LogFile` is specified:
 .\SampleProvider-action.ps1 install -UpdateId "SampleApp.Deploy_1.2.3.4" -LogFile "action.log" -Verbose
 ```
 
-## Creating Custom Providers
-### **Step 1: Define Provider Configuration**
+## Additional Resources
 
-Create a `provider.json` file that defines your provider configuration. This file specifies the provider metadata, scan and action script files, and file hashes required for integrity verification.
+For step-by-step guidance on creating your own custom provider, see the [Creating Custom Providers Guide](../README.md#creating-custom-providers) in the main samples README.
 
-**Example provider.json:**
-```json
-{
-  "Id": "MyProvider",
-  "Version": "1.0.0.0",
-  "Type": "Powershell",
-  "CatalogFile": "MyProvider.cat",
-  "ScanFileName": "MyProvider-scan.ps1",
-  "ScanFileArguments": "-ProviderId MyProvider -LogFile MyProvider.log -Verbose",
-  "PayloadFiles": [
-    {
-      "FileName": "MyProvider-action.ps1",
-      "FileHash": "PLACEHOLDER_SHA256_HASH_TO_BE_UPDATED"
-    },
-    {
-      "FileName": "MyProvider-scan.ps1",
-      "FileHash": "PLACEHOLDER_SHA256_HASH_TO_BE_UPDATED"
-    },
-    {
-      "FileName": "UOP-runtime.psd1",
-      "FileHash": "PLACEHOLDER_SHA256_HASH_TO_BE_UPDATED"
-    },
-    {
-      "FileName": "UOP-runtime.psm1",
-      "FileHash": "PLACEHOLDER_SHA256_HASH_TO_BE_UPDATED"
-    }
-  ]
-}
-```
-
-**Provider Metadata Fields:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `Id` | `string` | Required | Unique provider identifier |
-| `Version` | `string` | Required | Provider version (semantic versioning) |
-| `Type` | `string` | Required | `Executable` or `Powershell` based providers |
-| `CatalogFile` | `string` | Required | Catalog file name for code signing |
-| `ScanFileName` | `string` | Required | Entry point script for scan operations |
-| `ScanFileArguments` | `string` | Optional | Default arguments passed to scan script |
-| `PayloadFiles` | `array` | Required | Array of all provider files with integrity hashes |
-| `PayloadFiles[].FileName` | `string` | Required | Relative path to the payload file |
-| `PayloadFiles[].FileHash` | `string` | Required | SHA-256 hash of the file (Base64 encoded) |
-| `ScanFrequencyInHours` | `integer` | Optional | Scan frequency in hours (Min: 12 hours, Max: 360 hours (15 days)) |
-| `MigrateStateOnUpgrade` | `boolean` | Optional | Whether provider `State` folder contents should be migrated on an OS upgrade |
-
-> **Note:** File hashes will be automatically calculated and updated when using the [`Update-Provider.ps1`](../../../tools/Update-Provider.ps1) script in Step 4.
-
-For a complete example, see [`provider.json`](provider.json) in this samples directory.
-
-### **Step 2: Certificate Setup (One-time)**
-```powershell
-.\New-SigningCertificate.ps1 -ProviderName "MyProvider"
-```
-
-### **Step 3: Copy and Customize Scripts**
-1. Copy `SampleProvider-scan.ps1` → `MyProvider-scan.ps1`
-2. Copy `SampleProvider-action.ps1` → `MyProvider-action.ps1`
-3. Modify scan script to create your specific updates
-4. Modify action script to perform your specific operations
-5. Ensure scan script references your action script filename
-
-> **Note:** An alternative approach is to use a single script that handles all update operations (download, install, deploy, restart) by branching logic based on the action argument passed by the orchestrator, rather than creating separate scripts for each action type.
-
-### **Step 4: Prepare and Sign Provider**
-```powershell
-# Complete workflow: update hashes, generate catalog, and sign
-.\Update-Provider.ps1 -ProviderPath "C:\MyProvider" -SignCatalog
-```
-
-### **Step 5: Test Provider**
-```powershell
-# Test provider
-.\MyProvider-scan.ps1 -ProviderId "MyProvider" -LogFile MyProvider.log -Verbose",
-```
-
-### **Step 6: Register Provider**
-```powershell
-# Import the Windows Update Orchestrator module
-Import-Module -Name ".\windows-uop\tools\UOP-deployment.psd1" -Force
-
-# Register your provider (performs validation automatically)
-Register-WindowsSoftwareUpdateProvider -ProviderPath "C:\MyProvider"
-```
-
-### **Step 7: Perform a Windows Software Update Scan**
-```powershell
-# Import the module
-Import-Module -Name ".\windows-uop\tools\UOP-deployment.psd1" -Force
-
-# Scan for updates from your provider only
-Start-WindowsUpdateScan -IsUserInitiated $true
-```
+- [Windows.Management.Update Namespace Documentation](https://learn.microsoft.com/uwp/api/windows.management.update)
+- [Provider Configuration Schema](../README.md)
+- [Provider Tools and Scripts](../../tools/README.md)

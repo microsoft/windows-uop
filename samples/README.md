@@ -74,98 +74,15 @@ All samples create similar update types to demonstrate different action flows:
 3. **Follow the README.md** in that directory for specific build and usage instructions
 4. **Review the provider.json** configuration file in each sample
 
-## Integration Flow
-
-## Action Examples
-
-```
-
-┌─────────────────────────────────────────────────────────────┐| Action | Command | Purpose |
-
-│  Windows Update Orchestrator                                │|--------|---------|---------|
-
-└─────────────────────────────────────────────────────────────┘| **Scan** | `.\SampleProvider-scan.ps1` | Discover updates |
-
-                    │| **Download** | `.\SampleProvider-action.ps1 download -UpdateId "ABC123"` | Download update |
-
-                    ├── Triggers Scan ──────────────┐| **Install** | `.\SampleProvider-action.ps1 install -UpdateId "ABC123" -ForceClose` | Install with app closure |
-
-                    │                                │| **Deploy** | `.\SampleProvider-action.ps1 deploy -UpdateId "ABC123"` | Deploy update |
-
-                    │                                ▼| **Restart** | `.\SampleProvider-action.ps1 restart -UpdateId "ABC123"` | Application restart |
-
-            ┌───────────────────────────────────────────────┐
-
-            │  Provider Scan Operation                      │## Logging
-
-            │  - Discover available updates                 │
-
-            │  - Create update metadata                     │When `-LogFile` is specified:
-
-            │  - Submit to Windows Update                   │- Output redirected to `State/<LogFile>`
-
-            └───────────────────────────────────────────────┘- Automatic log rotation (5MB default)
-
-                    │- Timestamped entries with structured information
-
-                    │ Update metadata submitted- Verbose mode automatically enabled
-
-                    │
-
-                    ▼## Integration with Windows Update
-
-┌─────────────────────────────────────────────────────────────┐
-
-│  Windows Update Orchestrator                                │1. **Registration**: Provider registers with Windows Update system
-
-│  - Schedules updates based on policy                        │2. **Scan Phase**: System calls `SampleProvider-scan.ps1` to discover updates
-
-│  - Determines when to execute actions                       │3. **Action Phase**: System calls `SampleProvider-action.ps1` to execute operations
-
-└─────────────────────────────────────────────────────────────┘4. **Progress Reporting**: Actions report progress via UOP-runtime module
-
-                    │
-
-                    ├── Executes Action ────────────┐## Example Workflows
-
-                    │                                │
-
-                    │                                ▼### Basic Scan
-
-            ┌───────────────────────────────────────────────┐```powershell
-
-            │  Provider Action Operation                    │.\SampleProvider-scan.ps1
-
-            │  - Execute download/install/deploy/restart    │```
-
-            │  - Report progress                            │
-
-            │  - Submit result                              │### Scan with Logging
-
-            └───────────────────────────────────────────────┘```powershell
-
-```.\SampleProvider-scan.ps1 -ProviderId "SampleProvider" -LogFile "scan.log"
-
-```
-
 ## Additional Resources
 
-### Execute Actions
+- [Windows.Management.Update API Documentation](https://learn.microsoft.com/uwp/api/windows.management.update)
+- [Provider Tools and Scripts](../tools/README.md)
+- **Debugging**: Use Event Viewer (Windows Logs → Application) for provider diagnostics
 
-- **Windows.Management.Update API Documentation**: Refer to Windows SDK documentation```powershell
+## Support
 
-- **Provider Configuration**: See `provider.json` files in each sample directory# Download
-
-- **Debugging**: Use Event Viewer (Windows Logs → Application) for provider diagnostics.\SampleProvider-action.ps1 download -UpdateId "SampleApp.Deploy_1.2.3.4"
-
-
-
-## Support# Install with logging
-
-.\SampleProvider-action.ps1 install -UpdateId "SampleApp.Deploy_1.2.3.4" -LogFile "action.log" -Verbose
-
-For issues or questions about these samples, please refer to the main project documentation or file an issue in the project repository.```
-
+For issues or questions about these samples, please refer to the main project documentation or file an issue in the project repository.
 
 ## Creating Custom Providers
 ### **Step 1: Define Provider Configuration**
