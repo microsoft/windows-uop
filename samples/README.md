@@ -74,98 +74,16 @@ All samples create similar update types to demonstrate different action flows:
 3. **Follow the README.md** in that directory for specific build and usage instructions
 4. **Review the provider.json** configuration file in each sample
 
-## Integration Flow
-
-## Action Examples
-
-```
-
-┌─────────────────────────────────────────────────────────────┐| Action | Command | Purpose |
-
-│  Windows Update Orchestrator                                │|--------|---------|---------|
-
-└─────────────────────────────────────────────────────────────┘| **Scan** | `.\SampleProvider-scan.ps1` | Discover updates |
-
-                    │| **Download** | `.\SampleProvider-action.ps1 download -UpdateId "ABC123"` | Download update |
-
-                    ├── Triggers Scan ──────────────┐| **Install** | `.\SampleProvider-action.ps1 install -UpdateId "ABC123" -ForceClose` | Install with app closure |
-
-                    │                                │| **Deploy** | `.\SampleProvider-action.ps1 deploy -UpdateId "ABC123"` | Deploy update |
-
-                    │                                ▼| **Restart** | `.\SampleProvider-action.ps1 restart -UpdateId "ABC123"` | Application restart |
-
-            ┌───────────────────────────────────────────────┐
-
-            │  Provider Scan Operation                      │## Logging
-
-            │  - Discover available updates                 │
-
-            │  - Create update metadata                     │When `-LogFile` is specified:
-
-            │  - Submit to Windows Update                   │- Output redirected to `State/<LogFile>`
-
-            └───────────────────────────────────────────────┘- Automatic log rotation (5MB default)
-
-                    │- Timestamped entries with structured information
-
-                    │ Update metadata submitted- Verbose mode automatically enabled
-
-                    │
-
-                    ▼## Integration with Windows Update
-
-┌─────────────────────────────────────────────────────────────┐
-
-│  Windows Update Orchestrator                                │1. **Registration**: Provider registers with Windows Update system
-
-│  - Schedules updates based on policy                        │2. **Scan Phase**: System calls `SampleProvider-scan.ps1` to discover updates
-
-│  - Determines when to execute actions                       │3. **Action Phase**: System calls `SampleProvider-action.ps1` to execute operations
-
-└─────────────────────────────────────────────────────────────┘4. **Progress Reporting**: Actions report progress via UOP-runtime module
-
-                    │
-
-                    ├── Executes Action ────────────┐## Example Workflows
-
-                    │                                │
-
-                    │                                ▼### Basic Scan
-
-            ┌───────────────────────────────────────────────┐```powershell
-
-            │  Provider Action Operation                    │.\SampleProvider-scan.ps1
-
-            │  - Execute download/install/deploy/restart    │```
-
-            │  - Report progress                            │
-
-            │  - Submit result                              │### Scan with Logging
-
-            └───────────────────────────────────────────────┘```powershell
-
-```.\SampleProvider-scan.ps1 -ProviderId "SampleProvider" -LogFile "scan.log"
-
-```
-
 ## Additional Resources
 
-### Execute Actions
+- [Windows.Management.Update API Documentation](https://learn.microsoft.com/uwp/api/windows.management.update)
+- [Provider Tools and Scripts](../tools/README.md)
+- [PSExec - Sysinternals](https://learn.microsoft.com/sysinternals/downloads/psexec)
+- **Debugging**: Use Event Viewer (Windows Logs → Application) for provider diagnostics
 
-- **Windows.Management.Update API Documentation**: Refer to Windows SDK documentation```powershell
+## Support
 
-- **Provider Configuration**: See `provider.json` files in each sample directory# Download
-
-- **Debugging**: Use Event Viewer (Windows Logs → Application) for provider diagnostics.\SampleProvider-action.ps1 download -UpdateId "SampleApp.Deploy_1.2.3.4"
-
-
-
-## Support# Install with logging
-
-.\SampleProvider-action.ps1 install -UpdateId "SampleApp.Deploy_1.2.3.4" -LogFile "action.log" -Verbose
-
-For issues or questions about these samples, please refer to the main project documentation or file an issue in the project repository.```
-
+For issues or questions about these samples, please refer to the main project documentation or file an issue in the project repository.
 
 ## Creating Custom Providers
 ### **Step 1: Define Provider Configuration**
@@ -226,7 +144,9 @@ For a complete example, see [`provider.json`](provider.json) in this samples dir
 .\New-SigningCertificate.ps1 -ProviderName "MyProvider"
 ```
 
-### **Step 3: Copy and Customize Scripts**
+### **Step 3: Create Provider Implementation**
+
+**For PowerShell Providers:**
 1. Copy `SampleProvider-scan.ps1` → `MyProvider-scan.ps1`
 2. Copy `SampleProvider-action.ps1` → `MyProvider-action.ps1`
 3. Modify scan script to create your specific updates
@@ -235,6 +155,14 @@ For a complete example, see [`provider.json`](provider.json) in this samples dir
 
 > **Note:** An alternative approach is to use a single script that handles all update operations (download, install, deploy, restart) by branching logic based on the action argument passed by the orchestrator, rather than creating separate scripts for each action type.
 
+**For C++/C# Executable Providers:**
+1. Build your provider executable (e.g., `MyProvider.exe`)
+2. Implement scan operation that creates and submits update metadata
+3. Implement action handlers (download, install, deploy, restart) with progress reporting
+4. Ensure executable supports command-line arguments for actions and provider ID
+
+> **Note:** While you can create separate executables for scan and action operations (similar to the PowerShell approach), using a single executable that handles all operations based on command-line arguments is simpler and more common.
+
 ### **Step 4: Prepare and Sign Provider**
 ```powershell
 # Complete workflow: update hashes, generate catalog, and sign
@@ -242,10 +170,50 @@ For a complete example, see [`provider.json`](provider.json) in this samples dir
 ```
 
 ### **Step 5: Test Provider**
+
+**For PowerShell Providers:**
 ```powershell
-# Test provider
-.\MyProvider-scan.ps1 -ProviderId "MyProvider" -LogFile MyProvider.log -Verbose",
+# Test scan
+.\MyProvider-scan.ps1 -ProviderId "MyProvider" -LogFile MyProvider.log -Verbose
+
+# Test deploy action (single-step: download + install combined)
+.\MyProvider-action.ps1 deploy -ProviderId "MyProvider" -UpdateId "MyApp_1.0.0.0" -LogFile MyProvider.log
+
+# Test download/install actions (two-step: separate download and install)
+.\MyProvider-action.ps1 download -ProviderId "MyProvider" -UpdateId "MyApp_1.0.0.0" -LogFile MyProvider.log
+.\MyProvider-action.ps1 install -ProviderId "MyProvider" -UpdateId "MyApp_1.0.0.0" -LogFile MyProvider.log
 ```
+
+**For Executable Providers:**
+```powershell
+# Test scan
+.\MyProvider.exe scan --providerId MyProvider --log --verbose
+
+# Test deploy action (single-step: download + install combined)
+.\MyProvider.exe deploy --providerId MyProvider --updateId "MyApp_1.0.0.0" --log
+
+# Test download/install actions (two-step: separate download and install)
+.\MyProvider.exe download --providerId MyProvider --updateId "MyApp_1.0.0.0" --log
+.\MyProvider.exe install --providerId MyProvider --updateId "MyApp_1.0.0.0" --log
+```
+
+> **Note:** The `updateId` parameter is a provider-specific identifier (e.g., package name and version) used by the provider to identify which update to act on. This is distinct from the Windows Update system's hash-based UpdateID.
+
+**Testing in SYSTEM Context:**
+
+When registered with Windows Update, providers are invoked in **SYSTEM context** (LocalSystem account). To test your provider in the same context it will run in production, use PSExec:
+
+```powershell
+# Download PSExec from Sysinternals: https://learn.microsoft.com/sysinternals/downloads/psexec
+
+# For PowerShell providers
+psexec -s -i powershell.exe -File "C:\Path\To\MyProvider-scan.ps1" -ProviderId "MyProvider" -Verbose
+
+# For executable providers
+psexec -s "C:\Path\To\MyProvider.exe" scan --providerId MyProvider --verbose
+```
+
+> **Important**: Testing in SYSTEM context helps identify permission issues, file access problems, and environment differences before registering your provider.
 
 ### **Step 6: Register Provider**
 ```powershell
