@@ -55,6 +55,12 @@
 | 0x8024A331 | -2145082575 | 2149884721 | UO_E_PROVIDER_VALIDATION_ID_EXCEEDS_MAX_LENGTH | Validation failed: ID exceeds maximum length. |
 | 0x8024A332 | -2145082574 | 2149884722 | UO_E_PROVIDER_VALIDATION_VERSION_INVALID | Validation failed: invalid version. |
 | 0x8024A333 | -2145082573 | 2149884723 | UO_E_PROVIDER_VALIDATION_TYPE_INVALID | Validation failed: invalid type. |
+| 0x8024A334 | -2145082572 | 2149884724 | UO_E_PROVIDER_JIT_TAMPERING | UpdateProvider registration failed due to JIT tampering of the provider folder while being registered. |
+| 0x8024A335 | -2145082571 | 2149884725 | UO_E_PROVIDER_INVALID_STATE | UpdateProvider failure caused by unexpected internal state. |
+| 0x8024A336 | -2145082570 | 2149884726 | UO_E_PROVIDER_VALIDATION_ID_INVALID | UpdateProvider failure caused by invalid ID. |
+| 0x8024A337 | -2145082569 | 2149884727 | UO_E_PROVIDER_VALIDATION_FOLDER_INVALID | UpdateProvider failure for invalid folder path. |
+| 0x8024A338 | -2145082568 | 2149884728 | UO_E_PROVIDER_VALIDATION_SCANFILENAME_INVALID | UpdateProvider failure for invalid scan path. |
+| 0x8024A339 | -2145082567 | 2149884729 | UO_E_PROVIDER_VALIDATION_CATALOGFILE_INVALID | UpdateProvider failure for invalid catalog path. |
 
 ## Selected USO Error Codes (0x8024A235 - 0x8024A23B)
 
