@@ -133,7 +133,9 @@ function Invoke-ProviderAction {
         try {
             $Reason = [Windows.Management.Update.WindowsSoftwareUpdateRestartReason]::None
             $Result = [Windows.Management.Update.WindowsSoftwareUpdateActionResult]::Failed
-            $ErrorCode = if ($_.Exception.HResult) { $_.Exception.HResult } else { 0x8000FFFF }
+            # HResult is Int32; HRESULTs >= 0x80000000 are negative. Reinterpret bits as UInt32 for the WinRT API.
+            $HResult = if ($_.Exception.HResult) { $_.Exception.HResult } else { -2147418113 } # 0x8000FFFF
+            $ErrorCode = [uint32]([int64]$HResult -band 0xFFFFFFFFL)
             Set-ActionResult -ProviderId $ProviderId -Result $Result -Reason $Reason -ResultCode $ErrorCode
         }
         catch {

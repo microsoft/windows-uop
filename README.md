@@ -47,31 +47,18 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 
 | Requirement | Details |
 |-------------|---------|
-| **Operating System** | Windows 11, version 25H2 (26200.7344+) |
+| **Operating System** | Windows 11, version 24H2 (26100.9104+) <br> Windows 11, version 25H2 (26100.9104+) <br> Windows 11, version 26H1 (26100.9104+)|
 | **SKU Support** | Windows 11 Pro and Enterprise SKUs only |
 | **Privileges** | Administrator privileges required for all operations |
 | **Provider Support** | Powershell-based or Executable-based providers |
 
+
 ### Windows Insider Program Setup
+1. Install the latest cumulative update [update version here](insert link) through Windows Update.
 
-Enroll into Dev Windows Insider Channel in order to onboard to UOP:
+2. Reboot your device once the latest cumulative update has installed.
 
-1. If you don't already have a Windows Insider account, register for one at https://www.microsoft.com/en-us/windowsinsider/about-windows-insider-program.
 
-2. After registering, join your test device to the Insider Dev Channel to receive the latest Insider build:
-   * Select the **Start** button, then select **Settings** > **Windows Update** > **Windows Insider Program**
-   * Select **Get Started**
-   * Select **Link an account**, and either select the account you used to register with the Insider program, or if you used a different account, under **Use a different account**, select the type of account you used and enter those credentials
-   * Select the **Dev Channel** setting and then select **Continue**
-   * Review the agreements for your device, and then select **Continue**
-   * Select **Restart now** to restart your device
-
-3. After restarting, select the **Start** button, then select **Settings** > **Windows Update**
-
-4. Click the **Check for updates** button. The device should download and install the following update: [**Windows 11 Insider Preview Build 26220.7344 (KB5070316)**](https://blogs.windows.com/windows-insider/2025/12/05/announcing-windows-11-insider-preview-build-26220-7344-dev-beta-channels/)
-    > **Note:** If the build minor revision shown is greater than `.7344`, that is valid as well.
-
-5. Reboot when prompted to complete the install
 
 ## Getting Started
 
@@ -93,7 +80,7 @@ cd C:/Test/SampleProvider
 
 > _**Important: Ensure you have CRLF line endings set in your editor when working with the provider files.**_
 
-- **Windows SDK**: Install the latest [Windows SDK](https://go.microsoft.com/fwlink/?linkid=2335755). Content under the tools directory makes use of the tools present in the SDK.
+- **Windows SDK**: Install the latest [Windows SDK](insert SDK link here). Content under the tools directory makes use of the tools present in the SDK.
 
 - **Powershell**: Version 5.1
 ```powershell
@@ -163,7 +150,15 @@ When onboarding your custom provider, ensure the following:
 certutil.exe -f -addStore root "C:\Certificates\SampleProvider.cer"
 ```
 
-### Step 4: Provider Registration
+### Step 4: Register SampleProvider Uninstall Identity
+UOP requires each provider and update identity (`ProductCode` or `PackageFamilyName`) to match an installed product. This file registers the sample `ProductCode` identities.
+
+```powershell
+# From an elevated PowerShell prompt:
+reg import ".\tools\sample-products.reg"
+```
+
+### Step 5: Provider Registration
 Import the UOP-deployment manifest file and register the SampleProvider:
 
 ```powershell
@@ -181,7 +176,7 @@ The following checks take place as part of the registration process:
 3. Validation of the catalog file integrity
 4. Code signing certificates verification
 
-If all these checks pass, then the respective provider will be registered with teh Windows Update Orchestrator service, otherwise an error code specifying the reason for the registration failure will be outputted. Please refer to [UOP Error Codes](docs/UOPReturnCodes.md) for a comprehensive list of error codes.
+If all these checks pass, then the respective provider will be registered with teh Windows Update Orchestrator service, otherwise an error code specifying the reason for the registration failure will be outputted. Please refer to [UOPReturnCodes.md](docs/UOPReturnCodes.md) for a comprehensive list of error codes.
 
 ## Testing and Validation
 
@@ -208,11 +203,10 @@ After successful registration, test the update flow:
 # Import the module
 Import-Module -Name ".\UOP-deployment.psd1" -Force
 
-# Scan for updates from your provider only
-Start-WindowsUpdateScan -IsUserInitiated $true
+# Scan for updates from your provider only.
+Start-WindowsUpdateScan -Mode UserInitiated
 ```
 
-Ensure the updates corresponding to provider appear in the Windows App Updates Settings page. In order to navigate to the page, select **Settings** > **Apps** > **App Updates**. 
 
 ## Troubleshooting
 

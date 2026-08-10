@@ -8,7 +8,26 @@ A PowerShell-based sample provider demonstrating Windows Update Orchestrator (UO
 1. **PowerShell 5.1** with Windows Runtime support. This is required to load the WinRT runtimeclasses.
 2. Currently only supported for `powershell.exe` (not PowerShell Core/7+)
 3. **Administrator privileges** required to execute PowerShell modules
-4. **Windows 11 SDK** (Version 10.0.26100.0 or later) - Includes Windows.Management.Update Contract 2.0 APIs
+4. **Windows 11 SDK** (Version 10.0.26100.0 or later)
+5. **Sample product identities registered.** The orchestrator validates
+   `ProductCode` / `PackageFamilyName` against the device's installed-app
+   inventory at two points: at provider registration
+   (`UO_E_PROVIDER_VALIDATION_PROVIDER_IDENTITY_INVALID`, `0x8024A33C`) and
+   at scan time (`UO_E_PROVIDER_SCANRESULT_UPDATE_IDENTITY_INVALID`,
+   `0x8024A33D`). Import [`sample-products.reg`](sample-products.reg) from
+   an elevated prompt before registering the provider so the named
+   `SampleProvider`, `SampleApp.Deploy`, and `SampleApp.DownloadInstall`
+   identities appear as installed products:
+
+   ```cmd
+   reg import sample-products.reg
+   ```
+
+   The .reg file writes entries to both the 64-bit and `Wow6432Node` MSI
+   Uninstall hives. `SampleProvider` matches the `ProductCode` in
+   `provider.json`; the other two map 1:1 to the defaults used by
+   `New-DeployUpdate` and `New-DownloadInstallUpdate` in
+   `UOP-runtime.psm1`.
 
 > **Note**: Unlike the C# and C++ samples which use `--flag` syntax, PowerShell scripts use standard PowerShell parameter syntax with `-Parameter` format.
 

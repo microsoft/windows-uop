@@ -24,6 +24,7 @@ Add-Type -AssemblyName System.Runtime.WindowsRuntime
 [void][Windows.Management.Update.WindowsSoftwareUpdateArchitecture, Windows.Management.Update, ContentType=WindowsRuntime]
 [void][Windows.Management.Update.WindowsSoftwareUpdateActionResult, Windows.Management.Update, ContentType=WindowsRuntime]
 [void][Windows.Management.Update.WindowsSoftwareUpdateRestartReason, Windows.Management.Update, ContentType=WindowsRuntime]
+[void][Windows.Management.Update.WindowsSoftwareUpdateCategory, Windows.Management.Update, ContentType=WindowsRuntime]
 
 # Result types returned by WinRT API calls
 [void][Windows.Management.Update.WindowsSoftwareUpdateResult, Windows.Management.Update, ContentType=WindowsRuntime]
@@ -560,11 +561,17 @@ function Show-WindowsSoftwareUpdate {
     Write-OutputMessage "Provider Id: $($Update.ProviderId)"
     Write-OutputMessage "Installation Type: $([int]$Update.InstallationType)"
 
-    $productCode = if ($Update.ProductCode) { $Update.ProductCode.Value } else { "[empty]" }
-    Write-OutputMessage "Product Code: $productCode"
+    # IWindowsSoftwareUpdate2 additions
+    Write-OutputMessage "Is Seeker: $($Update.IsSeeker)"
+    Write-OutputMessage "Is Feature Update: $($Update.IsFeatureUpdate)"
+    Write-OutputMessage "Update Category: $($Update.UpdateCategory)"
 
-    $packageFamilyName = if ($Update.PackageFamilyName) { $Update.PackageFamilyName } else { "[empty]" }
-    Write-OutputMessage "Package Family Name: $packageFamilyName"
+    if ($Update.UpdateIdentity) {
+        Write-OutputMessage "Update Identity Type: $($Update.UpdateIdentity.Type)"
+        Write-OutputMessage "Update Identity: $($Update.UpdateIdentity.Identity)"
+    } else {
+        Write-OutputMessage "Update Identity: [empty]"
+    }
 
     # Update Source Version
     if ($Update.SourceVersion) {
@@ -597,6 +604,9 @@ function Show-WindowsSoftwareUpdate {
     if ($Update.OptionalInfo) {
         $optInfo = $Update.OptionalInfo
         Write-OutputMessage "Optional Information:"
+
+        $category = if ($optInfo.Category) { $optInfo.Category.Value } else { "[empty]" }
+        Write-OutputMessage "  Category: $category"
 
         $complianceDeadline = if ($optInfo.ComplianceDeadlineInDays) { $optInfo.ComplianceDeadlineInDays.Value } else { "[empty]" }
         Write-OutputMessage "  ComplianceDeadlineInDays: $complianceDeadline"
@@ -779,7 +789,12 @@ function New-DeployUpdate {
     [string]$RestartCommand = "",
         [array]$LocalizationInfo = @(),
         [Nullable[int]]$ComplianceDeadlineInDays = $null,
-        [Nullable[int]]$ComplianceGracePeriodInDays = $null
+        [Nullable[int]]$ComplianceGracePeriodInDays = $null,
+        # The orchestrator rejects scan results whose ProductCode is not in the live installed-app
+        # inventory. This default matches the named uninstall key registered by sample-products.reg;
+        # import that .reg file (as Administrator) before running.
+        [string]$ProductCode = "SampleApp.Deploy",
+        [Windows.Management.Update.WindowsSoftwareUpdateCategory]$Category = [Windows.Management.Update.WindowsSoftwareUpdateCategory]::Application
     )
 
     # Display update information with Write-Verbose (will only show if -Verbose is used)
@@ -816,6 +831,7 @@ function New-DeployUpdate {
         $graceValue = if ($ComplianceGracePeriodInDays -ne $null) { [System.Nullable[int]]::new($ComplianceGracePeriodInDays) } else { $null }
 
         [Windows.Management.Update.WindowsSoftwareUpdateOptionalInfo]::new(
+            $Category,
             $localizationList,
             $deadlineValue, # ComplianceDeadlineInDays
             $graceValue    # ComplianceGracePeriodInDays
@@ -847,6 +863,12 @@ function New-DeployUpdate {
         $optionalActionsInfo
     )
 
+    # Create update identity from product code
+    $updateIdentity = [Windows.Management.Update.WindowsSoftwareUpdateIdentity]::new(
+        [Windows.Management.Update.WindowsSoftwareUpdateIdentityType]::ProductCode,
+        $ProductCode
+    )
+
     # Create the WindowsSoftwareUpdate object
     $update = [Windows.Management.Update.WindowsSoftwareUpdate]::new(
         $ProviderId,
@@ -857,6 +879,7 @@ function New-DeployUpdate {
         $moreInfoUrlObj,
         $DownloadSize,
         $InstallSize,
+        $updateIdentity,
         $sourceVersionObj,
         $targetVersionObj,
         $null,              # AppPackage info
@@ -964,7 +987,12 @@ function New-DownloadInstallUpdate {
     [string]$RestartFileName = "",
         [array]$LocalizationInfo = @(),
         [Nullable[int]]$ComplianceDeadlineInDays = $null,
-        [Nullable[int]]$ComplianceGracePeriodInDays = $null
+        [Nullable[int]]$ComplianceGracePeriodInDays = $null,
+        # The orchestrator rejects scan results whose ProductCode is not in the live installed-app
+        # inventory. This default matches the named uninstall key registered by sample-products.reg;
+        # import that .reg file (as Administrator) before running.
+        [string]$ProductCode = "SampleApp.DownloadInstall",
+        [Windows.Management.Update.WindowsSoftwareUpdateCategory]$Category = [Windows.Management.Update.WindowsSoftwareUpdateCategory]::Application
     )
 
     # Display update information with Write-Verbose (will only show if -Verbose is used)
@@ -1001,6 +1029,7 @@ function New-DownloadInstallUpdate {
         $graceValue = if ($ComplianceGracePeriodInDays -ne $null) { [System.Nullable[int]]::new($ComplianceGracePeriodInDays) } else { $null }
 
         [Windows.Management.Update.WindowsSoftwareUpdateOptionalInfo]::new(
+            $Category,
             $localizationList,
             $deadlineValue, # ComplianceDeadlineInDays
             $graceValue    # ComplianceGracePeriodInDays
@@ -1040,6 +1069,12 @@ function New-DownloadInstallUpdate {
         $optionalActionsInfo
     )
 
+    # Create update identity from product code
+    $updateIdentity = [Windows.Management.Update.WindowsSoftwareUpdateIdentity]::new(
+        [Windows.Management.Update.WindowsSoftwareUpdateIdentityType]::ProductCode,
+        $ProductCode
+    )
+
     # Create the WindowsSoftwareUpdate object
     $update = [Windows.Management.Update.WindowsSoftwareUpdate]::new(
         $ProviderId,
@@ -1050,6 +1085,7 @@ function New-DownloadInstallUpdate {
         $moreInfoUrlObj,
         $DownloadSize,
         $InstallSize,
+        $updateIdentity,
         $sourceVersionObj,
         $targetVersionObj,
         $null,              # AppPackage info
@@ -1141,7 +1177,8 @@ function New-AppPackageUpdate {
         [int64]$InstallSize = 0,
         [Nullable[int]]$ComplianceDeadlineInDays = $null,
         [Nullable[int]]$ComplianceGracePeriodInDays = $null,
-        [array]$LocalizationInfo = @()
+        [array]$LocalizationInfo = @(),
+        [Windows.Management.Update.WindowsSoftwareUpdateCategory]$Category = [Windows.Management.Update.WindowsSoftwareUpdateCategory]::Application
     )
 
     # Display package information with Write-Verbose (will only show if -Verbose is used)
@@ -1197,6 +1234,7 @@ function New-AppPackageUpdate {
         $graceValue = if ($ComplianceGracePeriodInDays -ne $null) { [System.Nullable[int]]::new($ComplianceGracePeriodInDays) } else { $null }
 
         [Windows.Management.Update.WindowsSoftwareUpdateOptionalInfo]::new(
+            $Category,
             $localizationList,
             $deadlineValue,
             $graceValue
@@ -1204,6 +1242,12 @@ function New-AppPackageUpdate {
     } else {
         $null
     }
+
+    # Create update identity from package family name
+    $updateIdentity = [Windows.Management.Update.WindowsSoftwareUpdateIdentity]::new(
+        [Windows.Management.Update.WindowsSoftwareUpdateIdentityType]::PackageFamilyName,
+        $PackageFamilyName
+    )
 
     # Create the WindowsSoftwareUpdate object
     $update = [Windows.Management.Update.WindowsSoftwareUpdate]::new(
@@ -1215,6 +1259,7 @@ function New-AppPackageUpdate {
         $moreInfoUrlObj,
         $DownloadSize,
         $InstallSize,
+        $updateIdentity,
         $sourceVersionObj,
         $targetVersionObj,
         $appPackageInfo,
@@ -1249,26 +1294,41 @@ function Set-ScanResult {
     .PARAMETER UpdateCollection
     Collection of WindowsSoftwareUpdate objects to report.
 
+    .PARAMETER Succeeded
+    Whether the scan succeeded. Defaults to $true.
+
+    .PARAMETER ResultCode
+    HRESULT for the scan result. Defaults to S_OK (0). Pass an unsigned 32-bit value;
+    if you have a signed Int32 HRESULT, reinterpret its bits with:
+        [uint32]([int64]$hr -band 0xFFFFFFFFL)
+
+    .PARAMETER ExtendedError
+    Provider-defined 64-bit extended error code. Defaults to 0.
+
     .EXAMPLE
     $updates = @($update1, $update2)
     Set-ScanResult -ProviderId "SampleProvider" -UpdateCollection $updates
+
+    .EXAMPLE
+    Set-ScanResult -ProviderId "SampleProvider" -UpdateCollection @() `
+        -Succeeded $false -ResultCode ([uint32]0x80070005) -ExtendedError 0
     #>
     param(
         [Parameter(Mandatory=$true)]
         [string]$ProviderId,
         [Parameter(Mandatory=$true)]
-        [System.Collections.Generic.List[Windows.Management.Update.WindowsSoftwareUpdate]]$UpdateCollection
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[Windows.Management.Update.WindowsSoftwareUpdate]]$UpdateCollection,
+        [bool]$Succeeded = $true,
+        [uint32]$ResultCode = 0,
+        [uint64]$ExtendedError = 0
     )
 
     Write-OutputMessage "Creating provider status..."
     $providerStatus = [Windows.Management.Update.WindowsSoftwareUpdateProviderStatus]::new($ProviderId)
 
     Write-OutputMessage "Setting scan result..."
-
-    # Direct call to SetScanResult
-    $hresult_S_OK = [int]0x00000000
-    $extendedError = [uint64]0
-    $statusResult = $providerStatus.SetScanResult($true, $hresult_S_OK, $extendedError, $UpdateCollection)
+    $statusResult = $providerStatus.SetScanResult($Succeeded, $ResultCode, $ExtendedError, $UpdateCollection)
 
     if ($statusResult) {
         Write-ResultMessage "SetScanResult()" $statusResult
@@ -1352,7 +1412,7 @@ function Set-ActionResult {
         [Windows.Management.Update.WindowsSoftwareUpdateActionResult]$Result,
         [Parameter(Mandatory=$true)]
         [Windows.Management.Update.WindowsSoftwareUpdateRestartReason]$Reason,
-        [int32]$ResultCode = 0,
+        [uint32]$ResultCode = 0,
         [uint64]$ExtendedError = 0
     )
 

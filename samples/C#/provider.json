@@ -5,6 +5,7 @@
   "CatalogFile": "SampleProvider.cat",
   "ScanFileName": "SampleProvider.exe",
   "ScanFileArguments": "scan --providerId SampleProvider --log --verbose",
+  "ProductCode": "SampleProvider",
   "PayloadFiles": [
     {
       "FileName": "SampleProvider.exe",

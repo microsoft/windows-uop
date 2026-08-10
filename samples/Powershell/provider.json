@@ -5,14 +5,15 @@
   "CatalogFile": "SampleProvider.cat",
   "ScanFileName": "SampleProvider-scan.ps1",
   "ScanFileArguments": "-ProviderId SampleProvider -LogFile SampleProvider.log -Verbose",
+  "ProductCode": "SampleProvider",
   "PayloadFiles": [
     {
       "FileName": "README.md",
-      "FileHash": "B1I+nmi+stzvlXdHh9nwSC2E92R/ctTSDLICj3xF+fg="
+      "FileHash": "SvjhopkigaM/JbURLjkLdczSh2ykXfzluUUrcTZ8vDA="
     },
     {
       "FileName": "SampleProvider-action.ps1",
-      "FileHash": "1zxJ8hdHtu13Jv14lxOXiLbAKSlgeIkRJxD6213X4gs="
+      "FileHash": "NYz5fqhAxpeJ3x16vREDR8TgqTI+OjxfRyYSlgRlBKg="
     },
     {
       "FileName": "SampleProvider-scan.ps1",
@@ -24,7 +25,7 @@
     },
     {
       "FileName": "UOP-runtime.psm1",
-      "FileHash": "QjCsOCsGt+qiazuwcT00LvTZZgt0coXYR7MdCixMSik="
+      "FileHash": "tcBoMrXyIjgfTUKSWrfgje+4Yb5qGgQhheZIYiBzCPQ="
     }
   ]
 }

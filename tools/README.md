@@ -24,11 +24,11 @@ Import-Module .\UOP-deployment.psd1 -Force
 # Register a provider
 Register-WindowsSoftwareUpdateProvider -ProviderPath "C:\MyProvider"
 
-# Start a scan for all providers
-Start-WindowsUpdateScan -userInitiated $true
+# Start a scan, marked as user-initiated
+Start-WindowsUpdateScan -Mode UserInitiated
 
-# Start a scan for specific provider only
-Start-WindowsUpdateScan -userInitiated $true -providerFilter @("MyProvider")
+# Start a scan scoped to specific providers only
+Start-WindowsUpdateScan -Mode UserInitiated -ProviderFilter @("MyProvider")
 ```
 
 ## Management Scripts
@@ -122,5 +122,5 @@ Import-Module -Name .\UOP-deployment.psd1 -Force
 Register-WindowsSoftwareUpdateProvider -ProviderPath "C:\MyProvider"
 
 # Start a Windows Update scan
-Start-WindowsUpdateScan -IsUserInitiated $true
+Start-WindowsUpdateScan -Mode UserInitiated
 ```

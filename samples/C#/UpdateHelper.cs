@@ -149,6 +149,7 @@ internal static class UpdateHelper
             new Uri("http://contoso.com/updateId=SampleApp.Deploy_1.2.3.4"),
             1024 * 1024,
             2 * 1024 * 1024,
+            new WindowsSoftwareUpdateIdentity(WindowsSoftwareUpdateIdentityType.ProductCode, packageId),
             null, // WindowsSoftwareUpdateSourceVersion
             new WindowsSoftwareUpdateVersion(1, 2, 3, 4),
             null, // WindowsSoftwareUpdateAppPackageInfo
@@ -158,7 +159,7 @@ internal static class UpdateHelper
                     deployCmd,
                     WindowsSoftwareUpdateActionType.Deploy),
                 optionalActionsInfo),
-            new WindowsSoftwareUpdateOptionalInfo(localizationInfo, null, null));
+            new WindowsSoftwareUpdateOptionalInfo(WindowsSoftwareUpdateCategory.Application, localizationInfo, null, null));
 
         if (verboseMode)
         {
@@ -260,6 +261,7 @@ internal static class UpdateHelper
             new Uri("http://contoso.com/updateId=SampleApp.DownloadInstall_5.6.7.8"),
             1024 * 1024,
             2 * 1024 * 1024,
+            new WindowsSoftwareUpdateIdentity(WindowsSoftwareUpdateIdentityType.ProductCode, packageId),
             null, // WindowsSoftwareUpdateSourceVersion
             new WindowsSoftwareUpdateVersion(5, 6, 7, 8),
             null, // WindowsSoftwareUpdateAppPackageInfo
@@ -273,7 +275,7 @@ internal static class UpdateHelper
                     installCmd,
                     WindowsSoftwareUpdateActionType.Install),
                 optionalActionsInfo),
-            new WindowsSoftwareUpdateOptionalInfo(localizationInfo, null, null));
+            new WindowsSoftwareUpdateOptionalInfo(WindowsSoftwareUpdateCategory.Application, localizationInfo, null, null));
 
         if (verboseMode)
         {
@@ -335,11 +337,12 @@ internal static class UpdateHelper
             new Uri("http://contoso.com/updateId=SampleApp.AppPackage_2.3.4.5"),
             1024 * 1024,
             2 * 1024 * 1024,
+            new WindowsSoftwareUpdateIdentity(WindowsSoftwareUpdateIdentityType.PackageFamilyName, packageFamilyName),
             null, // WindowsSoftwareUpdateSourceVersion
             new WindowsSoftwareUpdateVersion(2, 3, 4, 5),
             appPackageInfo,
             null, // WindowsSoftwareUpdateExecutionInfo
-            new WindowsSoftwareUpdateOptionalInfo(localizationInfo, null, null));
+            new WindowsSoftwareUpdateOptionalInfo(WindowsSoftwareUpdateCategory.Application, localizationInfo, null, null));
 
         if (verboseMode)
         {
