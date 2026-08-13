@@ -8,7 +8,7 @@ A PowerShell-based sample provider demonstrating Windows Update Orchestrator (UO
 1. **PowerShell 5.1** with Windows Runtime support. This is required to load the WinRT runtimeclasses.
 2. Currently only supported for `powershell.exe` (not PowerShell Core/7+)
 3. **Administrator privileges** required to execute PowerShell modules
-4. **Windows 11 SDK** (Version 10.0.26100.0 or later)
+4. **Windows 11 SDK**: Version 10.0.26100.6901 (released 10/2025) or later. Download from: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/
 5. **Sample product identities registered.** The orchestrator validates
    `ProductCode` / `PackageFamilyName` against the device's installed-app
    inventory at two points: at provider registration

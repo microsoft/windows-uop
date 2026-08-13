@@ -47,24 +47,22 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 
 | Requirement | Details |
 |-------------|---------|
-| **Operating System** | Windows 11, version 24H2 (26100.9104+) <br> Windows 11, version 25H2 (26100.9104+) <br> Windows 11, version 26H1 (26100.9104+)|
+| **Operating System** | 26100.9168+ |
 | **SKU Support** | Windows 11 Pro and Enterprise SKUs only |
 | **Privileges** | Administrator privileges required for all operations |
 | **Provider Support** | Powershell-based or Executable-based providers |
 
+## Getting Started
 
-### Windows Insider Program Setup
-1. Install the latest cumulative update [update version here](insert link) through Windows Update.
+###  Setup
+1. Install the latest cumulative update [KB5121003 (OS Builds 26200.9168 and 26100.9168](https://support.microsoft.com/en-US/servicing/os/windows-11/2026/08/kb5121003-windows-11-24h2-25h2-security-update) through Windows Update.
 
 2. Reboot your device once the latest cumulative update has installed.
-
-
-
-## Getting Started
 
 ### Development Environment Setup
 
 **Prerequisites:**
+
 - **Repository**: Clone this repository on your development machine
 ```bash
 # Cloning the repo
