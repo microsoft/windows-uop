@@ -52,6 +52,8 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 | **Privileges** | Administrator privileges required for all operations |
 | **Provider Support** | Powershell-based or Executable-based providers |
 
+> _**Note**_: This feature and API support are gradually being rolled out.
+
 ## Getting Started
 
 ###  Setup
