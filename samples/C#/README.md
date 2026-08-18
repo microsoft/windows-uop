@@ -6,7 +6,7 @@ This sample demonstrates how to create a Windows Update Provider using C# and Wi
 
 ## Prerequisites
 
-- **Windows 11 SDK**: Version 10.0.26100.6901(released 10/2025) or later. Download from: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/
+- **Windows 11 SDK** (Version TBD)
 - **.NET 8.0 SDK** or later
 - **Visual Studio 2022** (recommended) or Visual Studio Code
 
