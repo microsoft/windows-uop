@@ -48,11 +48,11 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 | Requirement | Details |
 |-------------|---------|
 | **Operating System** | 26100.9168+ |
-| **SKU Support** | Windows 11 Pro and Enterprise SKUs only |
+| **SKU Support** | Windows 11 Pro,  Enterprise and Home  SKUs only |
 | **Privileges** | Administrator privileges required for all operations |
 | **Provider Support** | Powershell-based or Executable-based providers |
 
-> _**Note**_: This feature and API support are gradually being rolled out.
+> _**Note**_: This feature and API support are gradually being rolled out for those _**not**_  opted in to get the latest updates as soon as they're available. Instructions to opt in can be found here - [Get the latest updates as soon as they're available](https://support.microsoft.com/en-US/Windows/Deployment/Updates-Lifecycle/get-windows-updates-as-soon-as-they-re-available-for-your-device)
 
 ## Getting Started
 
