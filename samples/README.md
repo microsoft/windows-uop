@@ -21,7 +21,7 @@ A Windows Update Provider is a component that:
 ## Common Prerequisites
 
 All samples require:
-- **Windows 11 SDK**: [10.0.26100.9169 or later](https://go.microsoft.com/fwlink/?linkid=2376216)
+- **Windows 11 SDK**: [10.0.26100.9169 or later](https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads#windows-11--26100-versions)
 - **Administrator privileges** to register and run providers
 
 ## Choosing a Sample

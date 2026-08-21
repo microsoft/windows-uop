@@ -81,7 +81,7 @@ cd C:/Test/SampleProvider
 
 > _**Important: Ensure you have CRLF line endings set in your editor when working with the provider files.**_
 
-- **Windows SDK**: Install [Windows SDK for Windows 11 (10.0.26100.9169)](https://go.microsoft.com/fwlink/?linkid=2376216) or later. Content under the tools directory makes use of the tools present in the SDK.
+- **Windows SDK**: Install [Windows SDK for Windows 11 (10.0.26100.9169)](https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads#windows-11--26100-versions) or later. Content under the tools directory makes use of the tools present in the SDK.
 
 - **Powershell**: Version 5.1
 ```powershell
