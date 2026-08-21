@@ -24,7 +24,7 @@
 | 0x8024A311 | -2145082607 | 2149884689 | UO_E_PROVIDER_VALIDATION_CATALOG_FILE_MISSING | Validation failed: missing catalog file. |
 | 0x8024A312 | -2145082606 | 2149884690 | UO_E_PROVIDER_VALIDATION_SCAN_FILE_MISSING | Validation failed: missing scan file. |
 | 0x8024A313 | -2145082605 | 2149884691 | UO_E_PROVIDER_VALIDATION_SCAN_FILE_ARGUMENTS_MISSING | Validation failed: missing scan file arguments. |
-| 0x8024A314 | -2145082604 | 2149884692 | UO_E_PROVIDER_VALIDATION_PAYLOAD_FILES_MISSING | Validation failed: missing payload files. |
+| 0x8024A314 | -2145082604 | 2149884692 | UO_E_PROVIDER_VALIDATION_PAYLOAD_FILES_MISSING | Validation failed: provider has no usable PayloadFiles list (field absent, not an array, empty, or expected payload files not present in the folder). |
 | 0x8024A315 | -2145082603 | 2149884693 | UO_E_PROVIDER_VALIDATION_PAYLOADFILE_HASH_MISMATCH | Validation failed: payload file hash mismatch. |
 | 0x8024A316 | -2145082602 | 2149884694 | UO_E_PROVIDER_SCANRESULT_MISSING | Scan result is missing. |
 | 0x8024A317 | -2145082601 | 2149884695 | UO_E_PROVIDER_SCANRESULT_ALREADY_EXISTS | Scan result already exists. |
@@ -45,6 +45,7 @@
 | 0x8024A326 | -2145082586 | 2149884710 | UO_E_PROVIDER_ACTIONRESULT_VALUE_INVALID | Invalid/Unexpected ActionResult enum value. |
 | 0x8024A327 | -2145082585 | 2149884711 | UO_E_PROVIDER_RESTARTREASON_VALUE_INVALID | Invalid/Unexpected RestartReason enum value. |
 | 0x8024A328 | -2145082584 | 2149884712 | UO_E_PROVIDER_ACTIONRESULT_SUCCESS_HRESULT_MISMATCH | Inconsistent success vs HRESULT values. |
+| 0x8024A329 | -2145082583 | 2149884713 | UO_E_PROVIDER_VALIDATION_PROVIDER_JSON_MISSING | Validation failed: provider.json file is missing from the provider folder. |
 | 0x8024A32A | -2145082582 | 2149884714 | UO_E_PROVIDER_VALIDATION_INVALID_CATALOG | Catalog not signed or hash mismatch. |
 | 0x8024A32B | -2145082581 | 2149884715 | UO_E_PROVIDER_VALIDATION_INVALID_VERSION | Validation failed: invalid version. |
 | 0x8024A32C | -2145082580 | 2149884716 | UO_E_PROVIDER_VALIDATION_INVALID_TYPE | Validation failed: invalid type. |
@@ -55,12 +56,16 @@
 | 0x8024A331 | -2145082575 | 2149884721 | UO_E_PROVIDER_VALIDATION_ID_EXCEEDS_MAX_LENGTH | Validation failed: ID exceeds maximum length. |
 | 0x8024A332 | -2145082574 | 2149884722 | UO_E_PROVIDER_VALIDATION_VERSION_INVALID | Validation failed: invalid version. |
 | 0x8024A333 | -2145082573 | 2149884723 | UO_E_PROVIDER_VALIDATION_TYPE_INVALID | Validation failed: invalid type. |
-| 0x8024A334 | -2145082572 | 2149884724 | UO_E_PROVIDER_VALIDATION_TAMPERING | Update provider registration failed due to tampering of the provider folder while being registered. |
+| 0x8024A334 | -2145082572 | 2149884724 | UO_E_PROVIDER_VALIDATION_TAMPERING | Provider folder was tampered with during registration. |
 | 0x8024A335 | -2145082571 | 2149884725 | UO_E_PROVIDER_VALIDATION_ID_INVALID | Validation failed: invalid ID. |
 | 0x8024A336 | -2145082570 | 2149884726 | UO_E_PROVIDER_VALIDATION_FOLDER_INVALID | Validation failed: invalid folder path. |
 | 0x8024A337 | -2145082569 | 2149884727 | UO_E_PROVIDER_VALIDATION_SCANFILENAME_INVALID | Validation failed: invalid scan path. |
 | 0x8024A338 | -2145082568 | 2149884728 | UO_E_PROVIDER_VALIDATION_CATALOGFILE_INVALID | Validation failed: invalid catalog path. |
-| 0x8024A339 | -2145082567 | 2149884729 | UO_E_PROVIDER_VALIDATION_PAYLOADFILE_INVALID | Validation failed: invalid PayloadFile path. |
+| 0x8024A339 | -2145082567 | 2149884729 | UO_E_PROVIDER_VALIDATION_PAYLOADFILE_INVALID | Validation failed: a PayloadFiles entry is malformed (missing FileName/FileHash, invalid path, or lists a reserved root-level name like provider.json or the catalog file). |
+| 0x8024A33A | -2145082566 | 2149884730 | UO_E_PROVIDER_VALIDATION_UNEXPECTED_FILE | Validation failed: an unexpected file or directory entry was found in the provider folder. |
+| 0x8024A33B | -2145082565 | 2149884731 | UO_E_PROVIDER_VALIDATION_PROVIDER_IDENTITY_MISSING | Validation failed: provider.json must set either ProductCode or PackageFamilyName so the platform can identify and uninstall the provider. |
+| 0x8024A33C | -2145082564 | 2149884732 | UO_E_PROVIDER_VALIDATION_PROVIDER_IDENTITY_INVALID | Validation failed: provider identity (ProductCode or PackageFamilyName) declared in provider.json does not match any product installed on the device. |
+| 0x8024A33D | -2145082563 | 2149884733 | UO_E_PROVIDER_SCANRESULT_UPDATE_IDENTITY_INVALID | Update provider scan result contains an update whose identity (ProductCode or PackageFamilyName) does not match any product installed on the device. |
 
 ## Selected USO Error Codes (0x8024A235 - 0x8024A23B)
 

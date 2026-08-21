@@ -47,55 +47,25 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 
 | Requirement | Details |
 |-------------|---------|
-| **Operating System** | Windows 11, version 24H2 (26100.6725+) <br> Windows 11, version 25H2 (26100.6725+) |
-| **SKU Support** | Windows 11 Pro and Enterprise SKUs only |
+| **Operating System** | 26100.9168+ |
+| **SKU Support** | Windows 11 Pro,  Enterprise and Home  SKUs only |
 | **Privileges** | Administrator privileges required for all operations |
-| **Provider Support** | Powershell-based providers only (native executable support planned for October 2025 Windows SDK) |
+| **Provider Support** | Powershell-based or Executable-based providers |
 
-
-### Windows Insider Program Setup
-
-**Option 1 (Recommended):** Install the latest cumulative update [KB5065789 (OS Build 26100.6725)](https://support.microsoft.com/en-us/topic/september-29-2025-kb5065789-os-builds-26200-6725-and-26100-6725-preview-fa03ce47-cec5-4d1c-87d0-cac4195b4b4e) through Windows Update.
-
-**Option 2 (Alternative):** If you cannot obtain KB5065789 through the standard update process, follow the Windows Insider Program instructions below:
-
-1. If you don't already have a Windows Insider account, register for one at https://www.microsoft.com/en-us/windowsinsider/about-windows-insider-program.
-
-2. After registering, join your test device to the Insider Dev Channel to receive the latest Insider build:
-   * Select the **Start** button, then select **Settings** > **Windows Update** > **Windows Insider Program**
-   * Select **Get Started**
-   * Select **Link an account**, and either select the account you used to register with the Insider program, or if you used a different account, under **Use a different account**, select the type of account you used and enter those credentials
-   * Select the **Dev Channel** setting and then select **Continue**
-   * Review the agreements for your device, and then select **Continue**
-   * Select **Restart now** to restart your device
-
-3. After restarting, select the **Start** button, then select **Settings** > **Windows Update**
-
-4. Click the **Check for updates** button. The device should download and install the update titled: **Windows 11 Insider Preview 10.0.26220.6780 (ge_release_upr) (26220.6780)**
-    > **Note:** If the build minor revision shown is greater than `.6780`, that is valid as well.
-
-5. Reboot when prompted to complete the install
-
-### Feature Enablement
-
-**Step 1: Install Feature Enablement Package**
-- Download and install the [UOP enablement package](https://download.microsoft.com/download/95f9f6e1-8459-4907-a8fb-c4a9d9e4fd3d/Windows%2011%2024H2%20and%20Windows%20Server%202025%20KB5064081%20250821_22101%20Feature%20Preview.msi).
-
-**Step 2: Configure Group Policy**
-1. Open `Local Group Policy Editor` (gpedit.msc)
-2. Navigate to: `Computer Configuration` → `Administrative Templates` → `KB5064081_20250821_22101 Feature Preview` → `Windows 11, version 24H2 and Windows Server 2025`
-3. Enable the policy
-4. Apply the changes
-
-**Step 3: System Restart**
-
-Restart your device to activate the feature
+> _**Note**_: This feature and API support are gradually being rolled out, so you might not see them on your device immediately upon installing the .9168+ update.
+<br>Instructions to opt into getting the latest updates can be found here - [Get the latest updates as soon as they're available](https://support.microsoft.com/en-US/Windows/Deployment/Updates-Lifecycle/get-windows-updates-as-soon-as-they-re-available-for-your-device).
 
 ## Getting Started
+
+###  Setup
+1. Install the latest cumulative update [KB5121003 (OS Builds 26200.9168 and 26100.9168](https://support.microsoft.com/en-US/servicing/os/windows-11/2026/08/kb5121003-windows-11-24h2-25h2-security-update) through Windows Update.
+
+2. Reboot your device once the latest cumulative update has installed.
 
 ### Development Environment Setup
 
 **Prerequisites:**
+
 - **Repository**: Clone this repository on your development machine
 ```bash
 # Cloning the repo
@@ -111,7 +81,7 @@ cd C:/Test/SampleProvider
 
 > _**Important: Ensure you have CRLF line endings set in your editor when working with the provider files.**_
 
-- **Windows SDK**: Install the latest [Windows SDK](https://go.microsoft.com/fwlink/?linkid=2335755). Content under the tools directory makes use of the tools present in the SDK.
+- **Windows SDK**: Install [Windows SDK for Windows 11 (10.0.26100.9169)](https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads#windows-11--26100-versions) or later. Content under the tools directory makes use of the tools present in the SDK.
 
 - **Powershell**: Version 5.1
 ```powershell
@@ -181,7 +151,15 @@ When onboarding your custom provider, ensure the following:
 certutil.exe -f -addStore root "C:\Certificates\SampleProvider.cer"
 ```
 
-### Step 4: Provider Registration
+### Step 4: Register SampleProvider Uninstall Identity
+UOP requires each provider and update identity (`ProductCode` or `PackageFamilyName`) to match an installed product. This file registers the sample `ProductCode` identities.
+
+```powershell
+# From an elevated PowerShell prompt:
+reg import ".\tools\sample-products.reg"
+```
+
+### Step 5: Provider Registration
 Import the UOP-deployment manifest file and register the SampleProvider:
 
 ```powershell
@@ -226,13 +204,10 @@ After successful registration, test the update flow:
 # Import the module
 Import-Module -Name ".\UOP-deployment.psd1" -Force
 
-# Scan for updates from your provider only
-Start-WindowsUpdateScan -IsUserInitiated $true
+# Scan for updates from your provider only.
+Start-WindowsUpdateScan -Mode UserInitiated
 ```
 
-Ensure the updates corresponding to provider appear in the Windows Update Settings page.
-
-> **Current Limitation**: Updates from third-party providers appear in the main Windows Update Settings page. A dedicated App Update Settings UX will be available in a future release.
 
 ## Troubleshooting
 
@@ -242,7 +217,7 @@ For debugging and monitoring, utilize the logging utilities in [`UOP-deployment.
 **Important**: Files generated by the provider should be written to the State folder. Files written directly to the respective provider registration folder will result in validation failures.
 
 ### Error Code Reference
-For comprehensive error code documentation, see: [UOP Error Codes Reference](docs/UOPReturnCodes.md).
+For comprehensive error code documentation, see: [UOP Error Codes](docs/UOPReturnCodes.md).
 
 ## API Reference
 For comprehensive API documentation including parameters, examples, and advanced scenarios, see: [API Usage Guide](docs/UOPApiUsageGuide.md)

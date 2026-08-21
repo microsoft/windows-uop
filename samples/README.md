@@ -21,8 +21,7 @@ A Windows Update Provider is a component that:
 ## Common Prerequisites
 
 All samples require:
-- **Windows 11 SDK** (Version 10.0.26100.0 or later) - Includes Windows.Management.Update Contract 2.0 APIs
-  - Download from: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/
+- **Windows 11 SDK**: [10.0.26100.9169 or later](https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads#windows-11--26100-versions)
 - **Administrator privileges** to register and run providers
 
 ## Choosing a Sample
@@ -96,6 +95,7 @@ Create a `provider.json` file that defines your provider configuration. This fil
   "Id": "MyProvider",
   "Version": "1.0.0.0",
   "Type": "Powershell",
+  "ProductCode": "MyProvider",
   "CatalogFile": "MyProvider.cat",
   "ScanFileName": "MyProvider-scan.ps1",
   "ScanFileArguments": "-ProviderId MyProvider -LogFile MyProvider.log -Verbose",
@@ -134,8 +134,14 @@ Create a `provider.json` file that defines your provider configuration. This fil
 | `PayloadFiles[].FileHash` | `string` | Required | SHA-256 hash of the file (Base64 encoded) |
 | `ScanFrequencyInHours` | `integer` | Optional | Scan frequency in hours (Min: 12 hours, Max: 360 hours (15 days)) |
 | `MigrateStateOnUpgrade` | `boolean` | Optional | Whether provider `State` folder contents should be migrated on an OS upgrade |
+| `ProductCode` | `string` | Required | Installed product's Uninstall registry subkey name (for example, `MyProvider` or an MSI product-code GUID). Surfaced via `WindowsSoftwareUpdateProvider.ProviderIdentity` so the platform can uninstall the provider. Preferred when available. |
+| `PackageFamilyName` | `string` | Required | MSIX/AppX Package Family Name. Surfaced via `WindowsSoftwareUpdateProvider.ProviderIdentity` so the platform can uninstall the provider. If both `ProductCode` and `PackageFamilyName` are set, `ProductCode` wins. |
+
+¹ At least one of `ProductCode` or `PackageFamilyName` must be set. A provider that supplies neither will fail validation.
 
 > **Note:** File hashes will be automatically calculated and updated when using the [`Update-Provider.ps1`](../../../tools/Update-Provider.ps1) script in Step 4.
+
+> **Uninstall requirement:** Providers must be uninstallable. Before registration, create `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\<ProductCode>` (and the `Wow6432Node` equivalent for 32-bit products), or install the package identified by `PackageFamilyName`. The value in `provider.json` must exactly match that installed identity. A provider that supplies neither identity will fail validation. Setting `WindowsSoftwareUpdateIdentity` on individual updates returned by the scan is optional.
 
 For a complete example, see [`provider.json`](provider.json) in this samples directory.
 
@@ -230,5 +236,5 @@ Register-WindowsSoftwareUpdateProvider -ProviderPath "C:\MyProvider"
 Import-Module -Name ".\windows-uop\tools\UOP-deployment.psd1" -Force
 
 # Scan for updates from your provider only
-Start-WindowsUpdateScan -IsUserInitiated $true
+Start-WindowsUpdateScan -Mode UserInitiated
 ```

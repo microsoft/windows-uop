@@ -67,6 +67,7 @@ The Registration JSON file is needed to provide crucial information about your u
     "CatalogFile": "catalog.cat",
     "ScanFileName": "SampleProvider-scan.ps1",
     "ScanFileArguments": "-ProviderId SampleProvider -LogFile SampleProvider.log -Verbose",
+    "ProductCode":"SampleProvider",
     "PayloadFiles": [
         {
             "FileName": "SampleProvider-action.ps1",
@@ -95,13 +96,56 @@ The Registration JSON file is needed to provide crucial information about your u
 - **CatalogFile**: Path to your catalog file that contains file hashes for security validation.
 - **ScanFileName**: Path to your scan executable or Powershell script that performs the scan operation.
 - **PayloadFiles**: A collection of objects containing (`FileName`, `FileHash`) pairs for each executable or Powershell script needed to run your download, install, and deploy processes.
+- **ProductCode** *or* **PackageFamilyName** (at least one): Provider identity, surfaced via [`WindowsSoftwareUpdateProvider.ProviderIdentity`](#windowssoftwareupdateprovider). Required so the platform can uninstall the provider. `ProductCode` is the installed product's Uninstall registry subkey name (for example, `SampleProvider` or an MSI ProductCode GUID); `PackageFamilyName` is an MSIX/AppX Package Family Name. If both are supplied, `ProductCode` takes precedence and `ProviderIdentity.Type` is `ProductCode`.
 
 **Optional Fields:**
 - **ScanFileArguments**: Arguments to pass to the scan file when executed.
 - **ScanFrequencyInHours**: Specifies how often the orchestrator should execute the provider's scan script to check for new updates. Must be between 12 and 360 hours (15 days). If not specified, the orchestrator uses the default frequency of 22 hours.
 - **MigrateStateOnUpgrade**: Specifies whether provider state data (logs, configuration files, etc. stored in the State folder) should be preserved when the OS is upgraded.
 
+> **Uninstall requirement:** Providers must be uninstallable. Before registration, create `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\<ProductCode>` (and the `Wow6432Node` equivalent for 32-bit products), or install the package identified by `PackageFamilyName`. The value in `provider.json` must exactly match that installed identity. A provider that supplies neither identity will fail validation. Setting `WindowsSoftwareUpdateIdentity` on individual updates returned by the scan is optional.
+
 When you first begin development, you will not yet have the file names and file hashes ready for `PayloadFiles`. After completing the next step, we will return to this registration JSON file and amend it with this required field.
+
+#### Example: MSI-based product
+
+A provider that updates an MSI-based product sets `ProductCode`:
+
+```json
+{
+    "Id": "ContosoUpdater",
+    "Version": "1.0.0.0",
+    "Type": "Executable",
+    "CatalogFile": "ContosoUpdater.cat",
+    "ScanFileName": "ContosoUpdater.exe",
+    "ScanFileArguments": "scan --providerId ContosoUpdater",
+    "ProductCode": "{12345678-1234-1234-1234-123456789012}",
+    "PayloadFiles": [
+        { "FileName": "ContosoUpdater.exe", "FileHash": "..." }
+    ]
+}
+```
+
+#### Example: MSIX-packaged app
+
+A provider that updates an MSIX-packaged application sets `PackageFamilyName` instead:
+
+```json
+{
+    "Id": "ContosoAppUpdater",
+    "Version": "1.0.0.0",
+    "Type": "Executable",
+    "CatalogFile": "ContosoAppUpdater.cat",
+    "ScanFileName": "ContosoAppUpdater.exe",
+    "ScanFileArguments": "scan --providerId ContosoAppUpdater",
+    "PackageFamilyName": "Contoso.App_8wekyb3d8bbwe",
+    "PayloadFiles": [
+        { "FileName": "ContosoAppUpdater.exe", "FileHash": "..." }
+    ]
+}
+```
+
+In both cases, callers can read the provider's identity directly off the WinRT object: `provider.ProviderIdentity.Type` and `provider.ProviderIdentity.Identity`.
 
 ### 2. Prepare all necessary files - Scan (required), Action (optional), App close or restart (optional)
 
@@ -143,6 +187,10 @@ $update1 = [Windows.Management.Update.WindowsSoftwareUpdate]::new(
     [System.Uri]::new("https://www.contoso.com/appPackage"),
     [int](1024 * 1024 * 200), # 200 MB download size
     [int](1024 * 1024 * 300),  # 300 MB install size
+    [Windows.Management.Update.WindowsSoftwareUpdateIdentity]::new(
+        [Windows.Management.Update.WindowsSoftwareUpdateIdentityType]::PackageFamilyName,
+        "Contoso.AppPackage1_8h66172c634n0"
+    ),
     [Windows.Management.Update.WindowsSoftwareUpdateVersion]::new(2, 0, 0, 0), # Source Version
     [Windows.Management.Update.WindowsSoftwareUpdateVersion]::new(3, 2, 0, 0), # Target Version
     $appPackageProperties,
@@ -181,6 +229,10 @@ $update2 = [Windows.Management.Update.WindowsSoftwareUpdate]::new(
     [System.Uri]::new("https://www.contoso.com/exeupdate"),
     [int]1024 * 1024 * 10, # 10 MB download size
     [int]1024 * 1024 * 20,  # 20 MB install size
+    [Windows.Management.Update.WindowsSoftwareUpdateIdentity]::new(
+        [Windows.Management.Update.WindowsSoftwareUpdateIdentityType]::ProductCode,
+        "{00000000-0000-0000-0000-000000000000}"
+    ),
     [Windows.Management.Update.WindowsSoftwareUpdateVersion]::new(1, 0, 0, 0), # Source Version
     [Windows.Management.Update.WindowsSoftwareUpdateVersion]::new(2, 5, 0, 0), # Target Version
     $null,              # AppPackage info
@@ -318,19 +370,17 @@ catch {
 
 Once your update provider has been registered and your Scan Script has been implemented, the orchestrator will trigger your scan script to run at the default 22 hour frequency.
 
-For development and testing purposes you may want to trigger an interactive scan without causing the orchestrator to schedule further update actions like download and install so that you can verify that the scan result is what you expect by setting the `WindowsUpdateManagerScanOptions.PerformUpdateActions` property to `false` or you can trigger a scan via Powershell cmdlet.
+For development and testing purposes you may want to trigger a scan without causing the orchestrator to schedule further update actions like download and install so that you can verify that the scan result is what you expect by passing the `WindowsUpdateManagerScanMode.WhatIf` value to `PerformScan`, or you can trigger a scan via Powershell cmdlet.
 
 The following example illustrates how to call the APIs to scan for updates and check the Scan Result. Note: the example is pseudocode and should not be treated as code that can compile.
 
 ```powershell
 $manager = New-Object Windows.Management.Update.WindowsUpdateManager("ContosoClient")
 
-$scanOptions = [Windows.Management.Update.WindowsUpdateManagerScanOptions]::new()
-$scanOptions.IsUserInitiated = $true
-$scanOptions.PerformUpdateActions = $false
-$scanOptions.AllowBypassThrottling = $true
+# Available WindowsUpdateManagerScanMode values: Default, BypassScanDeferrals, UserInitiated, WhatIf
+$scanMode = [Windows.Management.Update.WindowsUpdateManagerScanMode]::UserInitiated
 
-$scanResult = $manager.StartScan($scanOptions)
+$scanResult = $manager.PerformScan($scanMode)
 
 if ($scanResult.Succeeded -eq $true) {
     Write-Host "Scan succeeded!: $scanResult"
@@ -384,7 +434,6 @@ This section documents all WinRT interfaces, classes, enums, and structs availab
 
 ### WindowsSoftwareUpdateProvider
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Represents a software update provider for registering and managing your update provider with the orchestrator.
 
@@ -396,6 +445,7 @@ public WindowsSoftwareUpdateProvider(string folderPath)
 **Properties:**
 - `string Id { get; }` - Unique identifier for the provider.
 - `string Version { get; }` - Version of the provider.
+- `string SchemaVersion { get; }` - Version of the provider.json schema supported by the orchestrator.
 - `string FolderPath { get; }` - Path to the provider's registration folder.
 - `string CatalogFile { get; }` - Path to the catalog file for signature verification.
 - `string ScanFileName { get; }` - Path to the scan executable file.
@@ -404,7 +454,8 @@ public WindowsSoftwareUpdateProvider(string folderPath)
 - `WindowsSoftwareUpdateProviderTrustState TrustState { get; }` - Trust state of the provider. See  [`WindowsSoftwareUpdateProviderTrustState`](#WindowsSoftwareUpdateProviderTrustState).
 - `WindowsSoftwareUpdateProviderType Type { get; }` - Type of the provider. See  [`WindowsSoftwareUpdateProviderType`](#WindowsSoftwareUpdateProviderType).
 - `WindowsSoftwareUpdateProviderRegistrationType RegistrationType { get; }` - Registration type of the provider. See  [`WindowsSoftwareUpdateProviderRegistrationType`](#WindowsSoftwareUpdateProviderRegistrationType).
-- `Windows.Foundation.Collections.PropertySet Properties { get; }` - Additional properties of the provider.
+- `WindowsSoftwareUpdateIdentity ProviderIdentity { get; }` - Identity of the provider, populated from `ProductCode` or `PackageFamilyName` in `provider.json` (`ProductCode` wins when both are set). Setting one of these fields is required because the platform uses `ProviderIdentity` to uninstall the provider; a provider that supplies neither will fail validation. Setting `WindowsSoftwareUpdateIdentity` on individual updates is optional. See [`WindowsSoftwareUpdateIdentity`](#windowssoftwareupdateidentity).
+- `Windows.Foundation.Collections.IMapView<string, object> Properties { get; }` - Additional metadata properties of the provider, keyed by name. Includes the fields parsed from `provider.json` (e.g. `Id`, `Version`, `Type`, `CatalogFile`, etc.).
 
 **Methods:**
 ```csharp
@@ -429,7 +480,6 @@ public object GetPropertyValue(string name)
 
 ### WindowsSoftwareUpdate
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Represents an individual software update with all metadata required for orchestration.
 
@@ -444,26 +494,7 @@ public WindowsSoftwareUpdate(
     Windows.Foundation.Uri moreInfoUrl,
     ulong downloadSizeInBytes,
     ulong installSizeInBytes,
-    WindowsSoftwareUpdateVersion sourceVersion,
-    WindowsSoftwareUpdateVersion targetVersion,
-    WindowsSoftwareUpdateAppPackageInfo appPackageInfo,
-    WindowsSoftwareUpdateExecutionInfo executionInfo,
-    WindowsSoftwareUpdateOptionalInfo optionalInfo
-)
-```
-
-```csharp
-public WindowsSoftwareUpdate(
-    string providerId,
-    WindowsSoftwareUpdateInstallationType installationType,
-    string updateId,
-    string title,
-    string description,
-    Windows.Foundation.Uri moreInfoUrl,
-    ulong downloadSizeInBytes,
-    ulong installSizeInBytes,
-    Windows.Foundation.IReference<Guid> productCode,
-    string packageFamilyName,
+    WindowsSoftwareUpdateIdentity updateIdentity,
     WindowsSoftwareUpdateVersion sourceVersion,
     WindowsSoftwareUpdateVersion targetVersion,
     WindowsSoftwareUpdateAppPackageInfo appPackageInfo,
@@ -483,8 +514,7 @@ public WindowsSoftwareUpdate(
 - `ulong InstallSizeInBytes { get; }` - Size of the installation in bytes.
 - `WindowsSoftwareUpdateVersion SourceVersion { get; }` - Current version being updated from. See  [`WindowsSoftwareUpdateVersion`](#windowssoftwareupdateversion).
 - `WindowsSoftwareUpdateVersion TargetVersion { get; }` - Target version to update to. See  [`WindowsSoftwareUpdateVersion`](#windowssoftwareupdateversion).
-- `Windows.Foundation.IReference<Guid> ProductCode { get; }` - Optional product code for the update.
-- `string PackageFamilyName { get; }` - Package family name for app package updates.
+- `WindowsSoftwareUpdateIdentity UpdateIdentity { get; }` - Identity information for the update. See [`WindowsSoftwareUpdateIdentity`](#windowssoftwareupdateidentity).
 - `string CurrentAction { get; }` - Current action being performed on the update.
 - `WindowsSoftwareUpdateActionResultInfo ActionResultInfo { get; }` - Result information of the last action performed. See [`WindowsSoftwareUpdateActionResultInfo`](#WindowsSoftwareUpdateActionResultInfo).
 - `WindowsSoftwareUpdateApprovalInfo ApprovalInfo { get; }` - Approval information for the update. See [`WindowsSoftwareUpdateApprovalInfo`](#windowssoftwareupdateapprovalinfo).
@@ -495,6 +525,9 @@ public WindowsSoftwareUpdate(
 - `WindowsSoftwareUpdateAppPackageInfo AppPackageInfo { get; }` - Properties specific to app package updates. See [`WindowsSoftwareUpdateAppPackageInfo`](#WindowsSoftwareUpdateAppPackageInfo).
 - `WindowsSoftwareUpdateExecutionInfo ExecutionInfo { get; }` - Execution information for the update. See [`WindowsSoftwareUpdateExecutionInfo`](#WindowsSoftwareUpdateExecutionInfo).
 - `WindowsSoftwareUpdateOptionalInfo OptionalInfo { get; }` - Optional properties for the update. See [`WindowsSoftwareUpdateOptionalInfo`](#WindowsSoftwareUpdateOptionalInfo).
+- `bool IsSeeker { get; }` - `true` if the update was scanned as a result of an explicit user-initiated check ("seeker" scan).
+- `WindowsSoftwareUpdateCategory UpdateCategory { get; }` - Category of the update (derived from `OptionalInfo.Category`; defaults to `Other` when not specified). See [`WindowsSoftwareUpdateCategory`](#WindowsSoftwareUpdateCategory).
+- `Windows.Foundation.Collections.IMapView<string, object> Properties { get; }` - Legacy WindowsUpdate-style property bag exposing fields that are not surfaced through a strongly-typed getter (e.g. `IsFeatureUpdate`, `IsSecurity`, `IsCritical`, `IsDriver`, `IsForOS`, `IsMandatory`, `IsUrgent`, `IsMinorImpact`, `IsEulaAccepted`, `EulaText`, `SupportUrl`).
 
 **Methods:**
 ```csharp
@@ -507,9 +540,13 @@ public WindowsSoftwareUpdateResult ApproveCurrentAction(bool approve)
 ```
 - Approves or rejects the current action for the update.
 
+```csharp
+public object GetPropertyValue(string name)
+```
+- Retrieves the value of a specific legacy property by name from the update's `Properties` bag. Returns `null` if the property is not present.
+
 ### WindowsUpdateManager
 
-- **Contract Version:** 1.0 (with additions in 2.0)
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Manages update operations and provides access to update providers and updates.
 
@@ -560,9 +597,9 @@ public Windows.Foundation.Collections.IVectorView<WindowsSoftwareUpdate> GetAppl
 - Returns a collection of software updates that are applicable to the current device.
 
 ```csharp
-public WindowsSoftwareUpdateScanResult PerformScan(WindowsUpdateManagerScanOptions options)
+public WindowsSoftwareUpdateScanResult PerformScan(WindowsUpdateManagerScanMode scanMode)
 ```
-- Performs a synchronous scan operation with the specified options.
+- Performs a synchronous scan operation with the specified mode.
 
 **Events:**
 - `ScanningStateChanged` - Fired when scanning state changes.
@@ -574,7 +611,6 @@ public WindowsSoftwareUpdateScanResult PerformScan(WindowsUpdateManagerScanOptio
 
 ### WindowsSoftwareUpdateProviderStatus
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Status reporting mechanism for software update providers. Use this class to return results at the completion of scan actions, download actions, and/or install actions.
 
@@ -602,24 +638,20 @@ public WindowsSoftwareUpdateResult SetActionResult(WindowsSoftwareUpdateProvider
 ```
 - Reports the final result of an update action.
 
-### WindowsUpdateManagerScanOptions
+### WindowsUpdateManagerScanMode
 
-Configuration options for scan operations.
+Selects scan behavior for `WindowsUpdateManager.PerformScan`.
 
-**Constructors:**
+**Values:**
 ```csharp
-public WindowsUpdateManagerScanOptions()
+public enum WindowsUpdateManagerScanMode
+{
+    Default = 0,             // Normal scan
+    BypassScanDeferrals = 1, // Ignore scan throttling/deferrals
+    UserInitiated = 2,       // Mark as user-initiated
+    WhatIf = 100             // Scan only, do not perform update actions
+}
 ```
-
-```csharp
-public WindowsUpdateManagerScanOptions(bool isUserInitiated)
-```
-
-**Properties:**
-- `bool IsUserInitiated { get; set; }` - Whether the scan was initiated by user action.
-- `bool AllowBypassThrottling { get; set; }` - Whether to bypass normal scan throttling.
-- `bool PerformUpdateActions { get; set; }` - Whether to perform update actions after scanning (default: true).
-
 ## Result Classes
 
 ### WindowsSoftwareUpdateResult
@@ -647,7 +679,6 @@ public WindowsSoftwareUpdateResult(bool succeeded, bool cancelRequested, uint re
 
 ### WindowsSoftwareUpdateScanResult
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Contains the result of a scan for software updates.
 
@@ -668,7 +699,6 @@ public WindowsSoftwareUpdateScanResult(bool succeeded, uint resultCode, ulong ex
 
 ### WindowsSoftwareUpdateProviderActionResult
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Contains the result of a provider action for a software update.
 
@@ -685,7 +715,6 @@ public WindowsSoftwareUpdateProviderActionResult(WindowsSoftwareUpdateActionResu
 
 ### WindowsSoftwareUpdateActionResultInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Result information for a software update action.
 
@@ -700,7 +729,6 @@ public WindowsSoftwareUpdateProviderActionResult(WindowsSoftwareUpdateActionResu
 
 ### WindowsSoftwareUpdateInstallationType
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Defines the supported package types for updates.
 
@@ -716,7 +744,6 @@ public enum WindowsSoftwareUpdateInstallationType
 
 ### WindowsSoftwareUpdateActionType
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Defines the actions that can be performed on updates.
 
@@ -733,7 +760,6 @@ public enum WindowsSoftwareUpdateActionType
 
 ### WindowsSoftwareUpdateRestartReason
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Defines restart reasons for updates.
 
@@ -749,7 +775,6 @@ public enum WindowsSoftwareUpdateRestartReason
 
 ### WindowsSoftwareUpdateArchitecture
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Defines the supported architectures for software updates.
 
@@ -764,9 +789,54 @@ public enum WindowsSoftwareUpdateArchitecture
 }
 ```
 
+### WindowsSoftwareUpdateIdentity
+
+- **Namespace:** `Windows.Management.Update`
+- **Description:** Represents the identity information for a software update, such as a product code or package family name.
+
+**Constructor:**
+```csharp
+public WindowsSoftwareUpdateIdentity(WindowsSoftwareUpdateIdentityType type, string identity)
+```
+
+**Properties:**
+- `WindowsSoftwareUpdateIdentityType Type { get; }` - The type of identity. See [`WindowsSoftwareUpdateIdentityType`](#windowssoftwareupdateidentitytype).
+- `string Identity { get; }` - The identity string value (e.g., a product code GUID or package family name).
+
+### WindowsSoftwareUpdateIdentityType
+
+- **Namespace:** `Windows.Management.Update`
+- **Description:** Defines the type of update identity.
+
+```csharp
+public enum WindowsSoftwareUpdateIdentityType
+{
+    ProductCode,
+    PackageFamilyName
+}
+```
+
+### WindowsSoftwareUpdateCategory
+
+- **Namespace:** `Windows.Management.Update`
+- **Description:** Defines the category of a software update.
+
+```csharp
+public enum WindowsSoftwareUpdateCategory
+{
+    Other,
+    Application,
+    Driver,
+    Firmware,
+    Definition,
+    Feature,
+    Quality,
+    AIComponent
+}
+```
+
 ### WindowsSoftwareUpdateActionResult
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Defines the result status of update actions.
 
@@ -783,7 +853,6 @@ public enum WindowsSoftwareUpdateActionResult
 
 ### WindowsSoftwareUpdateProviderTrustState
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Defines trust states for update providers.
 
@@ -798,7 +867,6 @@ public enum WindowsSoftwareUpdateProviderTrustState
 
 ### WindowsSoftwareUpdateProviderRegistrationType
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Defines provider registration states.
 
@@ -816,7 +884,6 @@ public enum WindowsSoftwareUpdateProviderRegistrationType
 
 ### WindowsSoftwareUpdateProviderType
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Defines the supported provider types.
 
@@ -831,7 +898,6 @@ public enum WindowsSoftwareUpdateProviderType
 
 ### WindowsUpdateAttentionRequiredReason
 
-- **Contract Version:** 1.0 (with additions in 2.0)
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Reasons why an update requires user or system attention.
 
@@ -871,8 +937,12 @@ public enum WindowsUpdateAttentionRequiredReason
     BlockedByOobe,
     DeferredDuringOobe,
     DeferredForSustainableTime,
-    BlockedByAppClose,  // new addition in 2.0
-    BlockedByAppRestart // new addition in 2.0
+    BlockedByAppClose,
+    BlockedByAppRestart,
+    OtherUpdateReverting,
+    RepairInProgress,
+    WaitingForLeadingUpdate,
+    Undefined,
 }
 ```
 
@@ -880,7 +950,6 @@ public enum WindowsUpdateAttentionRequiredReason
 
 ### WindowsSoftwareUpdateVersion
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Represents a version for a software update.
 
@@ -897,7 +966,6 @@ public WindowsSoftwareUpdateVersion(uint major, uint minor, uint revisionMajor, 
 
 ### WindowsSoftwareUpdateActionProgress
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Progress information for a software update action.
 
@@ -908,7 +976,6 @@ public WindowsSoftwareUpdateVersion(uint major, uint minor, uint revisionMajor, 
 
 ### WindowsSoftwareUpdateLocalizationInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Localization information for a software update.
 
@@ -925,7 +992,6 @@ public WindowsSoftwareUpdateLocalizationInfo(uint languageId, string title, stri
 
 ### WindowsSoftwareUpdateApprovalInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Approval information for a software update.
 
@@ -942,27 +1008,22 @@ public WindowsSoftwareUpdateApprovalInfo(bool userInitiated, bool appClosure, bo
 
 ### WindowsSoftwareUpdateOptionalInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Optional properties for a software update.
 
-**Constructors:**
+**Constructor:**
 ```csharp
-public WindowsSoftwareUpdateOptionalInfo(Windows.Foundation.IReference<int> complianceDeadlineInDays, Windows.Foundation.IReference<int> complianceGracePeriodInDays)
-```
-
-```csharp
-public WindowsSoftwareUpdateOptionalInfo(Windows.Foundation.Collections.IIterable<WindowsSoftwareUpdateLocalizationInfo> localizationInfo, Windows.Foundation.IReference<int> complianceDeadlineInDays, Windows.Foundation.IReference<int> complianceGracePeriodInDays)
+public WindowsSoftwareUpdateOptionalInfo(Windows.Foundation.IReference<WindowsSoftwareUpdateCategory> category, Windows.Foundation.Collections.IIterable<WindowsSoftwareUpdateLocalizationInfo> localizationInfo, Windows.Foundation.IReference<int> complianceDeadlineInDays, Windows.Foundation.IReference<int> complianceGracePeriodInDays)
 ```
 
 **Properties:**
+- `Windows.Foundation.IReference<WindowsSoftwareUpdateCategory> Category { get; }` - Category of the software update. See [`WindowsSoftwareUpdateCategory`](#windowssoftwareupdatecategory).
 - `Windows.Foundation.Collections.IVectorView<WindowsSoftwareUpdateLocalizationInfo> LocalizationInfo { get; }` - Localization information.
 - `Windows.Foundation.IReference<int> ComplianceDeadlineInDays { get; }` - Compliance deadline in days.
 - `Windows.Foundation.IReference<int> ComplianceGracePeriodInDays { get; }` - Compliance grace period in days.
 
 ### WindowsSoftwareUpdateAppPackageInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** App package properties for a software update.
 
@@ -978,7 +1039,6 @@ public WindowsSoftwareUpdateAppPackageInfo(string packageFamilyName, WindowsSoft
 
 ### WindowsSoftwareUpdateActionInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Action information for a software update.
 
@@ -994,7 +1054,6 @@ public WindowsSoftwareUpdateActionInfo(string fileName, string fileArguments, Wi
 
 ### WindowsSoftwareUpdateOptionalActionInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Optional action information for a software update.
 
@@ -1010,7 +1069,6 @@ public WindowsSoftwareUpdateOptionalActionInfo(WindowsSoftwareUpdateActionInfo c
 
 ### WindowsSoftwareUpdateExecutionInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Execution information for a software update.
 
@@ -1032,7 +1090,6 @@ public WindowsSoftwareUpdateExecutionInfo(WindowsSoftwareUpdateActionInfo deploy
 
 ### WindowsSoftwareUpdateProviderPayloadFileInfo
 
-- **Contract Version:** 2.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Information about a payload file for a software update provider.
 
@@ -1045,7 +1102,6 @@ public WindowsSoftwareUpdateExecutionInfo(WindowsSoftwareUpdateActionInfo deploy
 
 ### WindowsUpdateAttentionRequiredInfo
 
-- **Contract Version:** 1.0
 - **Namespace:** `Windows.Management.Update`
 - **Description:** Provides information about why an update requires attention.
 

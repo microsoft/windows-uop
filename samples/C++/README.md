@@ -6,9 +6,7 @@ This sample demonstrates how to create a Windows Update Provider using C++ and W
 
 ## Prerequisites
 
-- **Windows 11 SDK**: Version 10.0.26100.0 or later (Build 10.0.26100.6901 released 10/2025)
-  - Download from: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/
-  - Includes Windows.Management.Update Contract 2.0 APIs
+- **Windows 11 SDK**: [10.0.26100.9169 or later](https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads#windows-11--26100-versions)
 - **Visual Studio 2022** (v143 toolset)
 - **NuGet**: For package restoration
 

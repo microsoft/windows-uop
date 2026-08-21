@@ -47,8 +47,20 @@ std::wstring to_wstring(const WindowsSoftwareUpdate update)
     result << L"Install Size: " << update.InstallSizeInBytes() << L" bytes" << std::endl;
     result << L"Provider Id: " << update.ProviderId().c_str() << std::endl;
     result << L"Installation Type: " << static_cast<int>(update.InstallationType()) << std::endl;
-    result << L"Product Code: " << (update.ProductCode() ? winrt::to_hstring(update.ProductCode().Value()).c_str() : L"[empty]") << std::endl;
-    result << L"Package Family Name: " << (update.PackageFamilyName().c_str() ? update.PackageFamilyName().c_str() : L"[empty]") << std::endl;
+
+    // IWindowsSoftwareUpdate2 additions
+    result << L"Is Seeker: " << (update.IsSeeker() ? L"true" : L"false") << std::endl;
+    result << L"Update Category: " << static_cast<int>(update.UpdateCategory()) << std::endl;
+
+    if (auto updateIdentity = update.UpdateIdentity())
+    {
+        result << L"Update Identity Type: " << static_cast<int>(updateIdentity.Type()) << std::endl;
+        result << L"Update Identity: " << updateIdentity.Identity().c_str() << std::endl;
+    }
+    else
+    {
+        result << L"Update Identity: [empty]" << std::endl;
+    }
 
     // Update Source Version
     auto sourceVersion = update.SourceVersion();
@@ -435,6 +447,7 @@ WindowsSoftwareUpdate CreateExecutableDeployUpdate(std::wstring providerId)
         winrt::Windows::Foundation::Uri(L"http://contoso.com/updateId=SampleApp.Deploy_1.2.3.4"),
         1024 * 1024,
         2 * 1024 * 1024,
+        WindowsSoftwareUpdateIdentity(WindowsSoftwareUpdateIdentityType::ProductCode, packageId),
         nullptr /* WindowsSoftwareUpdateSourceVersion */,
         WindowsSoftwareUpdateVersion(1, 2, 3, 4),
         nullptr /* WindowsSoftwareUpdateAppPackageInfo */,
@@ -443,7 +456,7 @@ WindowsSoftwareUpdate CreateExecutableDeployUpdate(std::wstring providerId)
             deployCmd,
             WindowsSoftwareUpdateActionType::Deploy),
             optionalActionsInfo),
-        WindowsSoftwareUpdateOptionalInfo(localizationInfo, nullptr, nullptr));
+        WindowsSoftwareUpdateOptionalInfo(WindowsSoftwareUpdateCategory::Application, localizationInfo, nullptr, nullptr));
 
     if (g_verboseMode)
     {
@@ -546,6 +559,7 @@ WindowsSoftwareUpdate CreateExecutableDownloadInstallUpdate(std::wstring provide
         winrt::Windows::Foundation::Uri(L"http://contoso.com/updateId=SampleApp.DownloadInstall_5.6.7.8"),
         1024 * 1024,
         2 * 1024 * 1024,
+        WindowsSoftwareUpdateIdentity(WindowsSoftwareUpdateIdentityType::ProductCode, packageId),
         nullptr /* WindowsSoftwareUpdateSourceVersion */,
         WindowsSoftwareUpdateVersion(5, 6, 7, 8),
         nullptr /* WindowsSoftwareUpdateAppPackageInfo */,
@@ -559,7 +573,7 @@ WindowsSoftwareUpdate CreateExecutableDownloadInstallUpdate(std::wstring provide
                 installCmd,
                 WindowsSoftwareUpdateActionType::Install),
             optionalActionsInfo),
-        WindowsSoftwareUpdateOptionalInfo(localizationInfo, nullptr, nullptr));
+        WindowsSoftwareUpdateOptionalInfo(WindowsSoftwareUpdateCategory::Application, localizationInfo, nullptr, nullptr));
 
     if (g_verboseMode)
     {
@@ -626,11 +640,12 @@ WindowsSoftwareUpdate CreateAppPackageUpdate(std::wstring providerId)
         winrt::Windows::Foundation::Uri(L"http://contoso.com/updateId=SampleApp.AppPackage_2.3.4.5"),
         1024 * 1024,
         2 * 1024 * 1024,
+        WindowsSoftwareUpdateIdentity(WindowsSoftwareUpdateIdentityType::PackageFamilyName, packageFamilyName),
         nullptr /* WindowsSoftwareUpdateSourceVersion */,
         WindowsSoftwareUpdateVersion(2, 3, 4, 5),
         appPackageInfo,
         nullptr /* WindowsSoftwareUpdateExecutionInfo */,
-        WindowsSoftwareUpdateOptionalInfo(localizationInfo, nullptr, nullptr));
+        WindowsSoftwareUpdateOptionalInfo(WindowsSoftwareUpdateCategory::Application, localizationInfo, nullptr, nullptr));
 
     if (g_verboseMode)
     {

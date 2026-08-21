@@ -11,7 +11,7 @@ Add-Type -AssemblyName System.Runtime.WindowsRuntime
 # Load Windows Runtime types - Core provider and manager types
 [void][Windows.Management.Update.WindowsSoftwareUpdateProvider,Windows.Management.Update,ContentType=WindowsRuntime]
 [void][Windows.Management.Update.WindowsUpdateManager,Windows.Management.Update, ContentType=WindowsRuntime]
-[void][Windows.Management.Update.WindowsUpdateManagerScanOptions,Windows.Management.Update, ContentType=WindowsRuntime]
+[void][Windows.Management.Update.WindowsUpdateManagerScanMode,Windows.Management.Update, ContentType=WindowsRuntime]
 
 # Result types returned by WinRT API calls
 [void][Windows.Management.Update.WindowsSoftwareUpdateResult, Windows.Management.Update, ContentType=WindowsRuntime]
@@ -195,20 +195,17 @@ function Start-WindowsUpdateScan {
     .PARAMETER ClientName
     The client name required for the Windows Update Manager instance.
 
-    .PARAMETER IsUserInitiated
-    Indicates if the scan is initiated by the user. Default is false.
-
-    .PARAMETER PerformUpdateActions
-    Indicates if update actions (Download, Install, Deploy) should be performed after scan completion. Default is true.
-
-    .PARAMETER AllowBypassThrottling
-    Indicates if the scan can bypass throttling policies. Default is false.
+    .PARAMETER Mode
+    Scan behavior. One of: Default, BypassScanDeferrals, UserInitiated, WhatIf. Default is 'Default'.
 
     .PARAMETER ProviderFilter
-    An optional list of provider IDs to filter the scan to specific providers. Default is $null (all providers).
+    Optional array of provider IDs to scope the scan to. When omitted, the scan covers all registered providers.
 
     .EXAMPLE
-    Start-WindowsUpdateScan -ClientName "UOP-deployment" -IsUserInitiated $true -PerformUpdateActions $true -AllowBypassThrottling $false
+    Start-WindowsUpdateScan -ClientName "UOP-deployment" -Mode UserInitiated
+
+    .EXAMPLE
+    Start-WindowsUpdateScan -Mode UserInitiated -ProviderFilter @("MyProvider")
 
     .OUTPUTS
     Windows.Management.Update.WindowsUpdateScanResult
@@ -219,27 +216,26 @@ function Start-WindowsUpdateScan {
         [string]$ClientName = "UOP-deployment",
 
         [Parameter(Mandatory = $false)]
-        [Boolean]$IsUserInitiated = $false,
+        [ValidateSet('Default','BypassScanDeferrals','UserInitiated','WhatIf')]
+        [string]$Mode = 'Default',
 
         [Parameter(Mandatory = $false)]
-        [Boolean]$PerformUpdateActions = $true,
-
-        [Parameter(Mandatory = $false)]
-        [Boolean]$AllowBypassThrottling = $false
+        [string[]]$ProviderFilter
     )
 
     try {
-        Write-Host "Creating Windows Update Scan Options..." -ForegroundColor Green
-        $scanOptions = New-Object Windows.Management.Update.WindowsUpdateManagerScanOptions
-        $scanOptions.IsUserInitiated = $IsUserInitiated
-        $scanOptions.PerformUpdateActions = $PerformUpdateActions
-        $scanOptions.AllowBypassThrottling = $AllowBypassThrottling
+        $scanMode = [Windows.Management.Update.WindowsUpdateManagerScanMode]::$Mode
 
         Write-Host "Getting Windows Update Manager..." -ForegroundColor Green
-        $manager = New-Object Windows.Management.Update.WindowsUpdateManager($ClientName)
+        if ($PSBoundParameters.ContainsKey('ProviderFilter') -and $ProviderFilter.Count -gt 0) {
+            $manager = New-Object Windows.Management.Update.WindowsUpdateManager($ClientName, [string[]]$ProviderFilter)
+        }
+        else {
+            $manager = New-Object Windows.Management.Update.WindowsUpdateManager($ClientName)
+        }
 
-        Write-Host "Starting Windows Update scan..." -ForegroundColor Green
-        $result = $manager.PerformScan($scanOptions)
+        Write-Host "Starting Windows Update scan (Mode=$Mode)..." -ForegroundColor Green
+        $result = $manager.PerformScan($scanMode)
 
         if ($result.Succeeded -eq $false) {
             Write-Error "Windows Update scan failed: $($result.ResultCode)"
