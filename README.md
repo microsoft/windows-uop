@@ -48,7 +48,7 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 | Requirement | Details |
 |-------------|---------|
 | **Operating System** | 26100.9168+ |
-| **SKU Support** | Windows 11 Pro,  Enterprise and Home  SKUs only |
+| **SKU Support** | Windows 11 Pro,  Enterprise and Home SKUs only |
 | **Privileges** | Administrator privileges required for all operations |
 | **Provider Support** | Powershell-based or Executable-based providers |
 
@@ -58,7 +58,7 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 ## Getting Started
 
 ###  Setup
-1. Install the latest cumulative update [KB5121003 (OS Builds 26200.9168 and 26100.9168](https://support.microsoft.com/en-US/servicing/os/windows-11/2026/08/kb5121003-windows-11-24h2-25h2-security-update) through Windows Update.
+1. Install the latest cumulative update [KB5121003 (OS Builds 26200.9168 and 26100.9168](https://support.microsoft.com/en-US/servicing/os/windows-11/2026/08/kb5121003-windows-11-24h2-25h2-security-update)) through Windows Update.
 
 2. Reboot your device once the latest cumulative update has installed.
 
@@ -221,13 +221,6 @@ For comprehensive error code documentation, see: [UOP Error Codes](docs/UOPRetur
 
 ## API Reference
 For comprehensive API documentation including parameters, examples, and advanced scenarios, see: [API Usage Guide](docs/UOPApiUsageGuide.md)
-
-## Support
-
-For questions, issues, or feedback regarding the Windows Update Orchestration Platform, please use one of the following channels:
-
-- **Teams**: Post in the Windows Update Orchestration Platform Private Preview Teams channel
-- **Email**: [unifiedorchestrator@service.microsoft.com](mailto:unifiedorchestrator@service.microsoft.com)
 
 ### Reporting Issues
 
