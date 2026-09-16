@@ -52,13 +52,10 @@ The Update Orchestration Platform (UOP) enables third-party software update prov
 | **Privileges** | Administrator privileges required for all operations |
 | **Provider Support** | Powershell-based or Executable-based providers |
 
-> _**Note**_: This feature and API support are gradually being rolled out, so you might not see them on your device immediately upon installing the .9168+ update.
-<br>Instructions to opt into getting the latest updates can be found here - [Get the latest updates as soon as they're available](https://support.microsoft.com/en-US/Windows/Deployment/Updates-Lifecycle/get-windows-updates-as-soon-as-they-re-available-for-your-device).
-
 ## Getting Started
 
 ###  Setup
-1. Install the latest cumulative update [KB5121003 (OS Builds 26200.9168 and 26100.9168](https://support.microsoft.com/en-US/servicing/os/windows-11/2026/08/kb5121003-windows-11-24h2-25h2-security-update)) through Windows Update.
+1. Install the latest cumulative update [KB5121003 (OS Builds 26200.9168 and 26100.9168](https://support.microsoft.com/en-US/servicing/os/windows-11/2026/08/kb5121003-windows-11-24h2-25h2-security-update)) or greater through Windows Update.
 
 2. Reboot your device once the latest cumulative update has installed.
 
