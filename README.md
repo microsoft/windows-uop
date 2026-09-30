@@ -16,6 +16,11 @@
 ## Overview
 The Update Orchestration Platform (UOP) enables third-party software update providers to integrate seamlessly into the Windows Update ecosystem. This creates a single point of orchestration for both system and app updates.
 
+> ℹ️ **Note**
+> 
+> If your application is distributed through the Microsoft Store, update acquisition, delivery, and installation are already managed by the Store platform, and no additional UOP integration is needed. Developers should consider integrating with UOP only when their application cannot use the [Store distribution and update mechanism](https://learn.microsoft.com/windows/apps/package-and-deploy/choose-distribution-path). UOP is intended for applications that must manage and distribute their own updates.
+
+
 ### Key Orchestration Capabilities
 #### Intelligent Scheduling
 * System and onboarded app updates are orchestrated uniformly, ensuring consistent scheduling of update providers.
